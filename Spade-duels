@@ -52,11 +52,13 @@ local rightWaypointData = {
     {x=-483.57, y=-5.10, z=18.74},
     {x=-475.00, y=-6.99, z=26.43},
     {x=-474.67, y=-6.94, z=105.48},
+    {x=-474.67, y=-6.94, z=105.48},
 }
 local leftWaypointData = {
     {x=-472.49, y=-7.00, z=90.62},
     {x=-484.62, y=-5.10, z=100.37},
     {x=-475.08, y=-7.00, z=93.29},
+    {x=-474.22, y=-6.96, z=16.18},
     {x=-474.22, y=-6.96, z=16.18},
 }
 local function buildWaypoints(data)
@@ -96,6 +98,9 @@ local jumpBoostActive = false; local jumpBoostConn   = nil
 local infJumpActive   = false; local infJumpConn     = nil
 
 local stealSpeedActive = false; local stealSpeedConn  = nil
+local carrySpeedToggleActive = false; local carrySpeedToggleConn = nil
+local lastHitTime = 0   -- tracks when we last took a hit for grace period
+local HIT_GRACE = 3     -- seconds player can still move after getting hit
 local STEAL_SPEED_VALUE = 29
 
 local antiRagdollActive = false; local antiRagdollConn = nil
@@ -309,6 +314,32 @@ end
 local function stopStealSpeed() if stealSpeedConn then stealSpeedConn:Disconnect(); stealSpeedConn=nil end end
 
 -- Anti Ragdoll
+-- Carry Speed Toggle
+-- When on: sets WalkSpeed to CARRY_SPEED live. When off: sets to NORMAL_SPEED.
+local function applyCarrySpeedToggle()
+    local char = player.Character; if not char then return end
+    local hum  = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+    hum.WalkSpeed = carrySpeedToggleActive and CARRY_SPEED or NORMAL_SPEED
+end
+
+local function startCarrySpeedToggle()
+    applyCarrySpeedToggle()
+    if carrySpeedToggleConn then carrySpeedToggleConn:Disconnect() end
+    carrySpeedToggleConn = RunService.Heartbeat:Connect(function()
+        if not carrySpeedToggleActive then return end
+        local char = player.Character; if not char then return end
+        local hum  = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+        hum.WalkSpeed = CARRY_SPEED
+    end)
+end
+
+local function stopCarrySpeedToggle()
+    if carrySpeedToggleConn then carrySpeedToggleConn:Disconnect(); carrySpeedToggleConn=nil end
+    local char = player.Character; if not char then return end
+    local hum  = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+    hum.WalkSpeed = NORMAL_SPEED
+end
+
 local function startAntiRagdoll()
     if antiRagdollConn then antiRagdollConn:Disconnect() end
     antiRagdollConn=RunService.Heartbeat:Connect(function()
@@ -316,13 +347,22 @@ local function startAntiRagdoll()
         local char=player.Character; if not char then return end
         local hum=char:FindFirstChildOfClass("Humanoid")
         local root=char:FindFirstChild("HumanoidRootPart")
-        if hum then
-            local s=hum:GetState()
-            -- Cover ragdoll, physics, fling, frozen, and platform stand states
-            if s==Enum.HumanoidStateType.Physics
-            or s==Enum.HumanoidStateType.Ragdoll
-            or s==Enum.HumanoidStateType.FallingDown
-            or s==Enum.HumanoidStateType.PlatformStanding then
+        if not hum then return end
+
+        local s=hum:GetState()
+        local isRagState = s==Enum.HumanoidStateType.Physics
+                        or s==Enum.HumanoidStateType.Ragdoll
+                        or s==Enum.HumanoidStateType.FallingDown
+                        or s==Enum.HumanoidStateType.PlatformStanding
+
+        if isRagState then
+            -- Record when we first entered ragdoll so grace period starts
+            if lastHitTime == 0 then lastHitTime = tick() end
+
+            -- Only fight the ragdoll state after the 3-second grace so player
+            -- can still move freely for 3 seconds even while knocked
+            local sinceHit = tick() - lastHitTime
+            if sinceHit >= HIT_GRACE then
                 hum:ChangeState(Enum.HumanoidStateType.Running)
                 if workspace.CurrentCamera then workspace.CurrentCamera.CameraSubject=hum end
                 if root then
@@ -330,22 +370,36 @@ local function startAntiRagdoll()
                     root.RotVelocity=Vector3.new(0,0,0)
                 end
             end
-            -- Restore movement stats in case the game froze them on hit
-            if hum.WalkSpeed < 1 then hum.WalkSpeed = 16 end
-            if hum.JumpPower  < 1 then
+        else
+            -- No longer in rag state â€” reset hit timer
+            lastHitTime = 0
+        end
+
+        -- Always keep PlatformStand off and joints enabled so movement is possible
+        if hum.PlatformStand then hum.PlatformStand = false end
+
+        -- Restore WalkSpeed/JumpPower if game zeroed them on hit
+        -- But only after the grace window (let physics play during grace)
+        if lastHitTime == 0 then
+            if hum.WalkSpeed < 1 then
+                hum.WalkSpeed = carrySpeedToggleActive and CARRY_SPEED or NORMAL_SPEED
+            end
+            if hum.JumpPower < 1 then
                 hum.UseJumpPower = true
                 hum.JumpPower = jumpBoostActive and JUMP_POWER_VALUE or 50
             end
-            -- Keep PlatformStand off
-            if hum.PlatformStand then hum.PlatformStand = false end
         end
-        -- Re-enable any disabled joints
+
+        -- Re-enable disabled joints every frame
         for _,obj in ipairs(char:GetDescendants()) do
             if obj:IsA("Motor6D") and not obj.Enabled then obj.Enabled=true end
         end
     end)
 end
-local function stopAntiRagdoll() if antiRagdollConn then antiRagdollConn:Disconnect(); antiRagdollConn=nil end end
+local function stopAntiRagdoll()
+    if antiRagdollConn then antiRagdollConn:Disconnect(); antiRagdollConn=nil end
+    lastHitTime = 0
+end
 
 -- Unwalk
 local function startUnwalk()
@@ -976,6 +1030,11 @@ registerToggle("Ground TP",groundTPItem, function() groundTPEnabled=true; ground
 local counterItem=makeSettingsItem("âš¡ Counter Hit",SContainer)
 registerToggle("Counter Hit",counterItem, function() counterHitActive=true; startCounterHit() end, function() stopCounterHit() end)
 
+local carrySpeedItem=makeSettingsItem("ðŸ¢ Carry Speed Mode",SContainer)
+registerToggle("Carry Speed Mode",carrySpeedItem,
+    function() carrySpeedToggleActive=true; startCarrySpeedToggle() end,
+    function() carrySpeedToggleActive=false; stopCarrySpeedToggle() end)
+
 local showWPItem=makeSettingsItem("ðŸ‘ Show Waypoints",SContainer)
 registerToggle("Show Waypoints",showWPItem, function() showWaypointsEnabled=true; showAllMarkers() end, function() showWaypointsEnabled=false; hideAllMarkers() end)
 
@@ -1204,7 +1263,8 @@ player.CharacterAdded:Connect(function()
     if stealSpeedActive  then startStealSpeed()   end; if spinActive  then startSpinBot()  end
     if antiFlingActive   then startAntiFling()     end; if stealActive then startStealLoop() end
     if jumpBoostActive   then startJumpBoost()     end; if infJumpActive then startInfJump() end
-    if counterHitActive  then startCounterHit()    end
+    if counterHitActive       then startCounterHit()          end
+    if carrySpeedToggleActive then startCarrySpeedToggle()    end
 end)
 
 local function onTextChanged(label)
