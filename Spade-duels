@@ -1,4 +1,4 @@
--- SPADE DUELS  â€“  Full Script
+-- SPADE DUELS  Ã¢â‚¬â€œ  Full Script
 -- Place as a LocalScript inside StarterPlayerScripts
 
 local Lib = Instance.new("ScreenGui")
@@ -225,7 +225,7 @@ end
 -- ============================================================
 
 -- Jump Boost
--- Jump Boost â€” hooks JumpRequest so it only fires on actual jump press
+-- Jump Boost Ã¢â‚¬â€ hooks JumpRequest so it only fires on actual jump press
 -- Setting JumpPower in Heartbeat every frame causes the game to think
 -- the character re-jumped, dropping held items. We only apply it once per press.
 local function startJumpBoost()
@@ -247,7 +247,7 @@ local function stopJumpBoost()
     if hum then hum.UseJumpPower = true; hum.JumpPower = 50 end
 end
 
--- Infinite Jump â€” uses velocity kick, NOT ChangeState (avoids reset)
+-- Infinite Jump Ã¢â‚¬â€ uses velocity kick, NOT ChangeState (avoids reset)
 local function startInfJump()
     if infJumpConn then infJumpConn:Disconnect() end
     infJumpConn=UIS.JumpRequest:Connect(function()
@@ -259,7 +259,7 @@ local function startInfJump()
         -- Only jump again if airborne (not grounded)
         local onGround=hum.FloorMaterial~=Enum.Material.Air
         if not onGround then
-            -- Kick upward using velocity â€” safe, no state change
+            -- Kick upward using velocity Ã¢â‚¬â€ safe, no state change
             hrp.AssemblyLinearVelocity=Vector3.new(
                 hrp.AssemblyLinearVelocity.X,
                 math.max(hrp.AssemblyLinearVelocity.Y, 50),
@@ -371,7 +371,7 @@ local function startAntiRagdoll()
                 end
             end
         else
-            -- No longer in rag state â€” reset hit timer
+            -- No longer in rag state Ã¢â‚¬â€ reset hit timer
             lastHitTime = 0
         end
 
@@ -558,7 +558,7 @@ local function startBatAimbot()
             local flatDir = Vector3.new(dir.X, 0, dir.Z)
 
             -- Auto-face: rotate character via BodyGyro so physics engine isn't disturbed
-            -- We use the humanoid's MoveToFinished approach â€” point camera + let AutoRotate handle it
+            -- We use the humanoid's MoveToFinished approach Ã¢â‚¬â€ point camera + let AutoRotate handle it
             if flatDir.Magnitude > 0.5 then
                 hum.AutoRotate = true
                 -- Move camera to look at target so AutoRotate aligns character to it
@@ -749,7 +749,7 @@ local function MakeMainBtnV2(labelText,xScale,xOff,yScale,yOff,w,h)
     local lbl=Instance.new("TextLabel",b); lbl.Name="Label"; lbl.Size=UDim2.new(1,-34,1,0); lbl.Position=UDim2.new(0,22,0,0)
     lbl.BackgroundTransparency=1; lbl.Text=labelText; lbl.TextColor3=C_TEXT; lbl.Font=Enum.Font.Gotham; lbl.TextSize=12; lbl.TextXAlignment=Enum.TextXAlignment.Left
     local gear=Instance.new("TextLabel",b); gear.Size=UDim2.new(0,16,0,16); gear.Position=UDim2.new(1,-20,0.5,-8)
-    gear.BackgroundTransparency=1; gear.Text="âš™"; gear.TextColor3=C_SUBTEXT; gear.Font=Enum.Font.Gotham; gear.TextSize=13
+    gear.BackgroundTransparency=1; gear.Text=""; gear.TextColor3=C_SUBTEXT; gear.Font=Enum.Font.Gotham; gear.TextSize=13
     return b
 end
 
@@ -773,9 +773,9 @@ ApplyStyle(groundTPFloat); MakeDraggable(groundTPFloat)
 local gtpDot=Instance.new("Frame",groundTPFloat); gtpDot.Name="StatusDot"; gtpDot.Size=UDim2.new(0,7,0,7); gtpDot.Position=UDim2.new(0,8,0.5,-3)
 gtpDot.BackgroundColor3=C_DOT_ON; gtpDot.BorderSizePixel=0; Instance.new("UICorner",gtpDot).CornerRadius=UDim.new(1,0)
 local gtpLabel=Instance.new("TextLabel",groundTPFloat); gtpLabel.Name="Label"; gtpLabel.Size=UDim2.new(1,-34,1,0); gtpLabel.Position=UDim2.new(0,22,0,0)
-gtpLabel.BackgroundTransparency=1; gtpLabel.Text="â†“ Drop Down"; gtpLabel.TextColor3=C_TEXT; gtpLabel.Font=Enum.Font.Gotham; gtpLabel.TextSize=12; gtpLabel.TextXAlignment=Enum.TextXAlignment.Left
+gtpLabel.BackgroundTransparency=1; gtpLabel.Text="Drop Down"; gtpLabel.TextColor3=C_TEXT; gtpLabel.Font=Enum.Font.Gotham; gtpLabel.TextSize=12; gtpLabel.TextXAlignment=Enum.TextXAlignment.Left
 local gtpArrow=Instance.new("TextLabel",groundTPFloat); gtpArrow.Size=UDim2.new(0,16,0,16); gtpArrow.Position=UDim2.new(1,-20,0.5,-8)
-gtpArrow.BackgroundTransparency=1; gtpArrow.Text="â¬‡"; gtpArrow.TextColor3=C_SUBTEXT; gtpArrow.Font=Enum.Font.Gotham; gtpArrow.TextSize=13
+gtpArrow.BackgroundTransparency=1; gtpArrow.Text=""; gtpArrow.TextColor3=C_SUBTEXT; gtpArrow.Font=Enum.Font.Gotham; gtpArrow.TextSize=13
 
 groundTPFloat.MouseButton1Click:Connect(function()
     local char=player.Character or player.CharacterAdded:Wait()
@@ -1007,8 +1007,8 @@ end
 -- BUILD SETTINGS CONTENT  (divider ABOVE its items each time)
 -- ============================================================
 
--- â”€â”€ FEATURES â”€â”€
-makeDivider("â”€â”€ FEATURES â”€â”€",SContainer)
+-- Ã¢â€â‚¬Ã¢â€â‚¬ FEATURES Ã¢â€â‚¬Ã¢â€â‚¬
+makeDivider("",SContainer)
 do
     local featureItems={"Anti Fling","Spin Bot","Anti Ragdoll","Auto Steal","Steal Speed","Unwalk"}
     for _,name in pairs(featureItems) do
@@ -1027,52 +1027,52 @@ end
 local groundTPItem=makeSettingsItem("Ground TP",SContainer)
 registerToggle("Ground TP",groundTPItem, function() groundTPEnabled=true; groundTPFloat.Visible=true end, function() groundTPEnabled=false; groundTPFloat.Visible=false end)
 
-local counterItem=makeSettingsItem("âš¡ Counter Hit",SContainer)
+local counterItem=makeSettingsItem("Counter Hit",SContainer)
 registerToggle("Counter Hit",counterItem, function() counterHitActive=true; startCounterHit() end, function() stopCounterHit() end)
 
-local carrySpeedItem=makeSettingsItem("ðŸ¢ Carry Speed Mode",SContainer)
+local carrySpeedItem=makeSettingsItem("Carry Speed Mode",SContainer)
 registerToggle("Carry Speed Mode",carrySpeedItem,
     function() carrySpeedToggleActive=true; startCarrySpeedToggle() end,
     function() carrySpeedToggleActive=false; stopCarrySpeedToggle() end)
 
-local showWPItem=makeSettingsItem("ðŸ‘ Show Waypoints",SContainer)
+local showWPItem=makeSettingsItem("Show Waypoints",SContainer)
 registerToggle("Show Waypoints",showWPItem, function() showWaypointsEnabled=true; showAllMarkers() end, function() showWaypointsEnabled=false; hideAllMarkers() end)
 
--- â”€â”€ SPEED BOOST â”€â”€
-makeDivider("â”€â”€ SPEED BOOST â”€â”€",SContainer)
-local _,normalSGV,normalSSV=makeSlider(SContainer,"âš¡ Normal Speed",10,150,NORMAL_SPEED,false,function(v) NORMAL_SPEED=v end)
-local _,carrySGV,carrySSV   =makeSlider(SContainer,"ðŸŽ’ Carry Speed", 5, 80,CARRY_SPEED, false,function(v) CARRY_SPEED=v end)
+-- Ã¢â€â‚¬Ã¢â€â‚¬ SPEED BOOST Ã¢â€â‚¬Ã¢â€â‚¬
+makeDivider("",SContainer)
+local _,normalSGV,normalSSV=makeSlider(SContainer,"Normal Speed",10,150,NORMAL_SPEED,false,function(v) NORMAL_SPEED=v end)
+local _,carrySGV,carrySSV   =makeSlider(SContainer,"Carry Speed", 5, 80,CARRY_SPEED, false,function(v) CARRY_SPEED=v end)
 
--- â”€â”€ JUMP BOOST â”€â”€
-makeDivider("â”€â”€ JUMP BOOST â”€â”€",SContainer)
+-- Ã¢â€â‚¬Ã¢â€â‚¬ JUMP BOOST Ã¢â€â‚¬Ã¢â€â‚¬
+makeDivider("",SContainer)
 do
     local jbItem=makeSettingsItem("Jump Boost",SContainer)
     registerToggle("Jump Boost",jbItem, function() jumpBoostActive=true; startJumpBoost() end, function() jumpBoostActive=false; stopJumpBoost() end)
     local ijItem=makeSettingsItem("Infinite Jump",SContainer)
     registerToggle("Infinite Jump",ijItem, function() infJumpActive=true; startInfJump() end, function() infJumpActive=false; stopInfJump() end)
 end
-local _,jumpSGV,jumpSSV=makeSlider(SContainer,"ðŸ”¼ Jump Power",10,500,JUMP_POWER_VALUE,false,function(v) JUMP_POWER_VALUE=v end)
+local _,jumpSGV,jumpSSV=makeSlider(SContainer,"Jump Power",10,500,JUMP_POWER_VALUE,false,function(v) JUMP_POWER_VALUE=v end)
 
--- â”€â”€ STEAL â”€â”€
-makeDivider("â”€â”€ STEAL â”€â”€",SContainer)
-local _,stealRadGV,stealRadSV=makeSlider(SContainer,"ðŸ“¡ Steal Radius",  3,  50,STEAL_RADIUS,false,function(v) STEAL_RADIUS=v end)
-local _,stealSpdGV,stealSpdSV=makeSlider(SContainer,"â± Steal Interval",0.1,2.0,STEAL_SPD,   true, function(v) STEAL_SPD=v end)
+-- Ã¢â€â‚¬Ã¢â€â‚¬ STEAL Ã¢â€â‚¬Ã¢â€â‚¬
+makeDivider("",SContainer)
+local _,stealRadGV,stealRadSV=makeSlider(SContainer,"Steal Radius",  3,  50,STEAL_RADIUS,false,function(v) STEAL_RADIUS=v end)
+local _,stealSpdGV,stealSpdSV=makeSlider(SContainer,"Steal Interval",0.1,2.0,STEAL_SPD,   true, function(v) STEAL_SPD=v end)
 
--- â”€â”€ WAYPOINTS â”€â”€
-makeDivider("â”€â”€ RIGHT WAYPOINTS â”€â”€",SContainer)
+-- Ã¢â€â‚¬Ã¢â€â‚¬ WAYPOINTS Ã¢â€â‚¬Ã¢â€â‚¬
+makeDivider("",SContainer)
 for i,data in ipairs(rightWaypointData) do makeWaypointEditor(SContainer,"right",i,data) end
-makeDivider("â”€â”€ LEFT WAYPOINTS â”€â”€",SContainer)
+makeDivider("",SContainer)
 for i,data in ipairs(leftWaypointData)  do makeWaypointEditor(SContainer,"left",i,data)  end
 
--- â”€â”€ GUI â”€â”€
-makeDivider("â”€â”€ GUI â”€â”€",SContainer)
-local lockItem=makeSettingsItem("ðŸ”“ Lock GUI",SContainer)
+-- Ã¢â€â‚¬Ã¢â€â‚¬ GUI Ã¢â€â‚¬Ã¢â€â‚¬
+makeDivider("",SContainer)
+local lockItem=makeSettingsItem("Lock GUI",SContainer)
 local lockDot=lockItem:FindFirstChild("StatusDot"); local lockLabel=lockItem:FindFirstChild("Label")
 lockItem.MouseButton1Click:Connect(function()
     guiLocked=not guiLocked
     lockItem.BackgroundColor3=guiLocked and Color3.fromRGB(255,248,220) or Color3.fromRGB(248,248,248)
     lockDot.BackgroundColor3=guiLocked and C_LOCK or C_DOT_OFF
-    lockLabel.Text=guiLocked and "ðŸ”’ Locked" or "ðŸ”“ Lock GUI"
+    lockLabel.Text=guiLocked and "Locked" or "Lock GUI"
     for _,f in ipairs(allDraggableFrames) do local stroke=f:FindFirstChildWhichIsA("UIStroke"); if stroke then stroke.Color=guiLocked and C_LOCK or C_BORDER end end
 end)
 
@@ -1080,7 +1080,7 @@ end)
 local bottomArea=Instance.new("Frame",SettingsPanel); bottomArea.Size=UDim2.new(1,-14,0,72); bottomArea.Position=UDim2.new(0,7,1,-78); bottomArea.BackgroundTransparency=1
 
 local SaveBtn=Instance.new("TextButton",bottomArea); SaveBtn.Size=UDim2.new(1,0,0,32); SaveBtn.Position=UDim2.new(0,0,0,0)
-SaveBtn.Text="ðŸ’¾  SAVE CONFIG"; SaveBtn.TextColor3=Color3.fromRGB(255,255,255); SaveBtn.Font=Enum.Font.GothamBold; SaveBtn.TextSize=12; SaveBtn.AutoButtonColor=false
+SaveBtn.Text="Ã°Å¸â€™Â¾  SAVE CONFIG"; SaveBtn.TextColor3=Color3.fromRGB(255,255,255); SaveBtn.Font=Enum.Font.GothamBold; SaveBtn.TextSize=12; SaveBtn.AutoButtonColor=false
 SaveBtn.BackgroundColor3=C_SAVE; SaveBtn.BackgroundTransparency=0; Instance.new("UICorner",SaveBtn).CornerRadius=UDim.new(0,12); Instance.new("UIStroke",SaveBtn).Color=Color3.fromRGB(0,180,80)
 
 local ResetBtn=Instance.new("TextButton",bottomArea); ResetBtn.Size=UDim2.new(1,0,0,26); ResetBtn.Position=UDim2.new(0,0,0,36)
@@ -1114,9 +1114,9 @@ local function doSaveConfig()
     data.waypoints={right=rightWaypointData,left=leftWaypointData}
     local ok=pcall(writefile,CONFIG_FILE,HttpService:JSONEncode(data))
     if ok then
-        TweenService:Create(SaveBtn,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(0,200,80)}):Play(); SaveBtn.Text="âœ”  SAVED!"
-        task.delay(1.2,function() TweenService:Create(SaveBtn,TweenInfo.new(0.2),{BackgroundColor3=C_SAVE}):Play(); SaveBtn.Text="ðŸ’¾  SAVE CONFIG" end)
-    else SaveBtn.Text="âœ˜  FAILED"; task.delay(1.5,function() SaveBtn.Text="ðŸ’¾  SAVE CONFIG" end) end
+        TweenService:Create(SaveBtn,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(0,200,80)}):Play(); SaveBtn.Text="SAVED!"
+        task.delay(1.2,function() TweenService:Create(SaveBtn,TweenInfo.new(0.2),{BackgroundColor3=C_SAVE}):Play(); SaveBtn.Text="SAVE CONFIG" end)
+    else SaveBtn.Text="FAILED"; task.delay(1.5,function() SaveBtn.Text="SAVE CONFIG" end) end
 end
 
 local function doLoadConfig()
@@ -1243,7 +1243,7 @@ tauntButtons["TAUNT"].MouseButton1Click:Connect(function()
     if tauntActive then
         tauntLoop=task.spawn(function()
             while tauntActive do
-                pcall(function() local TCS=game:GetService("TextChatService"); local ch=TCS.TextChannels:FindFirstChild("RBXGeneral"); if ch then ch:SendAsync("/spade duels") end end)
+                pcall(function() local TCS=game:GetService("TextChatService"); local ch=TCS.TextChannels:FindFirstChild("RBXGeneral"); if ch then ch:SendAsync("/SPADE HUB BETTER MY SONðŸ˜­") end end)
                 task.wait(0.5)
             end
         end)
