@@ -1,4 +1,4 @@
--- SPADE DUELS  â€œ  Full Script
+-- SPADE DUELS  Ã¢â‚¬â€œ  Full Script
 -- Place as a LocalScript inside StarterPlayerScripts
 
 local Lib = Instance.new("ScreenGui")
@@ -83,7 +83,7 @@ local AUTO_START_DELAY = 0.7
 local batAimbotActive = false
 local batAimbotConn   = nil
 local AimbotRadius    = 300
-local BatAimbotSpeed  = 59
+local BatAimbotSpeed  = 57
 
 local SlapList = {
     {1,"Bat"},{2,"Slap"},{3,"Iron Slap"},{4,"Gold Slap"},{5,"Diamond Slap"},
@@ -315,29 +315,33 @@ local function stopStealSpeed() if stealSpeedConn then stealSpeedConn:Disconnect
 
 -- Anti Ragdoll
 -- Carry Speed Toggle
--- When on: sets WalkSpeed to CARRY_SPEED live. When off: sets to NORMAL_SPEED.
-local function applyCarrySpeedToggle()
-    local char = player.Character; if not char then return end
-    local hum  = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
-    hum.WalkSpeed = carrySpeedToggleActive and CARRY_SPEED or NORMAL_SPEED
+-- Carry Speed Toggle
+-- Immediately sets WalkSpeed and keeps it via Heartbeat.
+-- Also respected by auto-patrol when not using patrol velocity.
+local function getDesiredWalkSpeed()
+    return carrySpeedToggleActive and CARRY_SPEED or NORMAL_SPEED
 end
 
 local function startCarrySpeedToggle()
-    applyCarrySpeedToggle()
     if carrySpeedToggleConn then carrySpeedToggleConn:Disconnect() end
+    -- Apply immediately
+    local char = player.Character
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = CARRY_SPEED end
+    -- Keep applied every frame so nothing can override it
     carrySpeedToggleConn = RunService.Heartbeat:Connect(function()
         if not carrySpeedToggleActive then return end
-        local char = player.Character; if not char then return end
-        local hum  = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
-        hum.WalkSpeed = CARRY_SPEED
+        local c = player.Character; if not c then return end
+        local h = c:FindFirstChildOfClass("Humanoid"); if not h then return end
+        if h.WalkSpeed ~= CARRY_SPEED then h.WalkSpeed = CARRY_SPEED end
     end)
 end
 
 local function stopCarrySpeedToggle()
     if carrySpeedToggleConn then carrySpeedToggleConn:Disconnect(); carrySpeedToggleConn=nil end
-    local char = player.Character; if not char then return end
-    local hum  = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
-    hum.WalkSpeed = NORMAL_SPEED
+    local char = player.Character
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.WalkSpeed = NORMAL_SPEED end
 end
 
 local function startAntiRagdoll()
@@ -674,7 +678,15 @@ end
 -- Patrol
 local function isCountdownNumber(text) local num=tonumber(text); if num and num>=1 and num<=5 then return true,num end; return false end
 local function isTimerInCountdown(label) if not label then return false end; local ok,num=isCountdownNumber(label.Text); return ok and num>=1 and num<=5 end
-local function getCurrentSpeed() if patrolMode~="none" then return currentWaypoint>=3 and CARRY_SPEED or NORMAL_SPEED end; return 0 end
+local function getCurrentSpeed()
+    if patrolMode ~= "none" then
+        -- If carry speed toggle is on, always use carry speed during patrol
+        if carrySpeedToggleActive then return CARRY_SPEED end
+        -- Otherwise: normal speed for first 2 waypoints, carry speed from waypoint 3+
+        return currentWaypoint >= 3 and CARRY_SPEED or NORMAL_SPEED
+    end
+    return 0
+end
 local function getCurrentWaypoints() if patrolMode=="right" then return rightWaypoints elseif patrolMode=="left" then return leftWaypoints end; return {} end
 
 local function updateWalking()
@@ -914,11 +926,21 @@ local function makeSettingsItem(name,parent)
 end
 
 local function makeDivider(text,parent)
-    local d=Instance.new("TextLabel",parent); d.Size=UDim2.new(1,0,0,20)
-    d.BackgroundColor3=Color3.fromRGB(240,240,240); d.BackgroundTransparency=0
-    Instance.new("UICorner",d).CornerRadius=UDim.new(0,12)
-    d.Text=text; d.TextColor3=C_ACTIVE; d.Font=Enum.Font.GothamBold; d.TextSize=10; d.TextXAlignment=Enum.TextXAlignment.Center
-    return d
+    -- Category header bar Ã¢â‚¬â€ bold white text on a solid red background
+    local wrap = Instance.new("Frame",parent)
+    wrap.Size = UDim2.new(1,0,0,24)
+    wrap.BackgroundColor3 = C_ACTIVE
+    wrap.BackgroundTransparency = 0
+    Instance.new("UICorner",wrap).CornerRadius = UDim.new(0,12)
+    local d = Instance.new("TextLabel",wrap)
+    d.Size = UDim2.new(1,0,1,0)
+    d.BackgroundTransparency = 1
+    d.Text = text
+    d.TextColor3 = Color3.fromRGB(255,255,255)
+    d.Font = Enum.Font.GothamBold
+    d.TextSize = 11
+    d.TextXAlignment = Enum.TextXAlignment.Center
+    return wrap
 end
 
 local slidingTarget=nil
@@ -1093,7 +1115,7 @@ end)
 local bottomArea=Instance.new("Frame",SettingsPanel); bottomArea.Size=UDim2.new(1,-14,0,72); bottomArea.Position=UDim2.new(0,7,1,-78); bottomArea.BackgroundTransparency=1
 
 local SaveBtn=Instance.new("TextButton",bottomArea); SaveBtn.Size=UDim2.new(1,0,0,32); SaveBtn.Position=UDim2.new(0,0,0,0)
-SaveBtn.Text="Ã°Å¸â€™Â¾  SAVE CONFIG"; SaveBtn.TextColor3=Color3.fromRGB(255,255,255); SaveBtn.Font=Enum.Font.GothamBold; SaveBtn.TextSize=12; SaveBtn.AutoButtonColor=false
+SaveBtn.Text="SAVE CONFIG"; SaveBtn.TextColor3=Color3.fromRGB(255,255,255); SaveBtn.Font=Enum.Font.GothamBold; SaveBtn.TextSize=12; SaveBtn.AutoButtonColor=false
 SaveBtn.BackgroundColor3=C_SAVE; SaveBtn.BackgroundTransparency=0; Instance.new("UICorner",SaveBtn).CornerRadius=UDim.new(0,12); Instance.new("UIStroke",SaveBtn).Color=Color3.fromRGB(0,180,80)
 
 local ResetBtn=Instance.new("TextButton",bottomArea); ResetBtn.Size=UDim2.new(1,0,0,26); ResetBtn.Position=UDim2.new(0,0,0,36)
@@ -1305,4 +1327,25 @@ Lib.Destroying:Connect(function()
     hideAllMarkers()
 end)
 
-task.defer(doLoadConfig)
+task.defer(function()
+    doLoadConfig()
+    -- Apply Normal Speed immediately on load so player is already fast
+    local function applyStartSpeed()
+        local char = player.Character or player.CharacterAdded:Wait()
+        local hum  = char:WaitForChild("Humanoid", 5)
+        if hum then
+            hum.WalkSpeed = NORMAL_SPEED
+        end
+    end
+    task.spawn(applyStartSpeed)
+    -- Also re-apply on every future respawn
+    player.CharacterAdded:Connect(function(char)
+        local hum = char:WaitForChild("Humanoid", 5)
+        if hum then
+            task.wait(0.1)   -- tiny wait for character to settle
+            if not carrySpeedToggleActive then
+                hum.WalkSpeed = NORMAL_SPEED
+            end
+        end
+    end)
+end)
