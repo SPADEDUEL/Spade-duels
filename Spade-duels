@@ -83,7 +83,7 @@ local AUTO_START_DELAY = 0.7
 local batAimbotActive = false
 local batAimbotConn   = nil
 local AimbotRadius    = 300
-local BatAimbotSpeed  = 57
+local BatAimbotSpeed  = 59
 
 local SlapList = {
     {1,"Bat"},{2,"Slap"},{3,"Iron Slap"},{4,"Gold Slap"},{5,"Diamond Slap"},
@@ -786,9 +786,9 @@ ApplyStyle(groundTPFloat); MakeDraggable(groundTPFloat)
 local gtpDot=Instance.new("Frame",groundTPFloat); gtpDot.Name="StatusDot"; gtpDot.Size=UDim2.new(0,7,0,7); gtpDot.Position=UDim2.new(0,8,0.5,-3)
 gtpDot.BackgroundColor3=C_DOT_ON; gtpDot.BorderSizePixel=0; Instance.new("UICorner",gtpDot).CornerRadius=UDim.new(1,0)
 local gtpLabel=Instance.new("TextLabel",groundTPFloat); gtpLabel.Name="Label"; gtpLabel.Size=UDim2.new(1,-34,1,0); gtpLabel.Position=UDim2.new(0,22,0,0)
-gtpLabel.BackgroundTransparency=1; gtpLabel.Text="Ã¢â€ â€œ Drop Down"; gtpLabel.TextColor3=C_TEXT; gtpLabel.Font=Enum.Font.Gotham; gtpLabel.TextSize=12; gtpLabel.TextXAlignment=Enum.TextXAlignment.Left
+gtpLabel.BackgroundTransparency=1; gtpLabel.Text="Drop Down"; gtpLabel.TextColor3=C_TEXT; gtpLabel.Font=Enum.Font.Gotham; gtpLabel.TextSize=12; gtpLabel.TextXAlignment=Enum.TextXAlignment.Left
 local gtpArrow=Instance.new("TextLabel",groundTPFloat); gtpArrow.Size=UDim2.new(0,16,0,16); gtpArrow.Position=UDim2.new(1,-20,0.5,-8)
-gtpArrow.BackgroundTransparency=1; gtpArrow.Text="Ã¢Â¬â€¡"; gtpArrow.TextColor3=C_SUBTEXT; gtpArrow.Font=Enum.Font.Gotham; gtpArrow.TextSize=13
+gtpArrow.BackgroundTransparency=1; gtpArrow.Text=""; gtpArrow.TextColor3=C_SUBTEXT; gtpArrow.Font=Enum.Font.Gotham; gtpArrow.TextSize=13
 
 groundTPFloat.MouseButton1Click:Connect(function()
     local char=player.Character or player.CharacterAdded:Wait()
