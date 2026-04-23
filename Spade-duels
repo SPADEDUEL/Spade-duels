@@ -51,25 +51,6 @@ local POSITION_L2 = Vector3.new(-483.12, -4.95, 94.80)
 local POSITION_R1 = Vector3.new(-476.16, -6.52, 25.62)
 local POSITION_R2 = Vector3.new(-483.04, -5.09, 23.14)
 
--- 5x5 adjustable waypoints
-local rightWaypointData = {
-    {x=-475.04,y=-6.99,z=26.71},{x=-475.57,y=-7,z=95.74},
-    {x=-485.00,y=-5.1,z=25.43},{x=-485.67,y=-6.94,z=95.48},
-    {x=-475.67,y=-6.99,z=26.48},
-}
-local leftWaypointData = {
-    {x=-475.49,y=-7.00,z=93.62},{x=-475.62,y=-6.96,z=26},
-    {x=-485.08,y=-7.00,z=94.29},{x=-485.22,y=-6.96,z=26},
-    {x=-475.22,y=-6.96,z=93.29},
-}
-local function buildWaypoints(d)
-    local t={}; for _,v in ipairs(d) do t[#t+1]=Vector3.new(v.x,v.y,v.z) end; return t
-end
-local rightWaypoints = buildWaypoints(rightWaypointData)
-local leftWaypoints  = buildWaypoints(leftWaypointData)
-local patrolMode="none"; local currentWaypoint=1; local patrolConn=nil
-local waypointFields={}
-
 -- Steal System (Lust insta-grab logic)
 local isStealing = false
 local stealStartTime = nil
@@ -145,13 +126,13 @@ local ProgressLabel, ProgressPercentLabel, ProgressBarFill, RadiusInput, Duratio
 local saveConfigBtn
 
 -- Colors
-local C_BG     = Color3.fromRGB(255,255,255)
-local C_PURPLE = Color3.fromRGB(200,20,20)
-local C_PURPLE2= Color3.fromRGB(240,80,80)
-local C_DIM    = Color3.fromRGB(140,0,0)
-local C_SW_OFF = Color3.fromRGB(210,210,210)
-local C_WHITE  = Color3.fromRGB(255,255,255)
-local C_ROW_BG = Color3.fromRGB(248,240,240)
+local C_BG = Color3.fromRGB(0, 0, 0)
+local C_PURPLE = Color3.fromRGB(178, 0, 255)
+local C_PURPLE2 = Color3.fromRGB(215, 90, 255)
+local C_DIM = Color3.fromRGB(100, 0, 145)
+local C_SW_OFF = Color3.fromRGB(28, 28, 28)
+local C_WHITE = Color3.fromRGB(255, 255, 255)
+local C_ROW_BG = Color3.fromRGB(10, 0, 16)
 
 -- Utility Functions
 local function getHRP()
@@ -199,7 +180,7 @@ local function lustScanPlot(plot)
     end
 end
 
--- Initialize scanner Ã¢â‚¬â€ called once after game loads
+-- Initialize scanner â€” called once after game loads
 local function lustInitScanner()
     task.wait(2)
     local plots = workspace:WaitForChild("Plots", 10)
@@ -552,7 +533,6 @@ end
 
 -- XRay & Optimizer
 local xrayDescendantConn = nil
-local xrayEnabled = false
 
 local function isXrayTarget(obj)
     if not obj:IsA("BasePart") then return false end
@@ -746,50 +726,138 @@ local function faceNorth()
 end
 
 -- Auto Movement
--- Spade looping waypoint patrol
-local function getCurrentWaypoints()
-    if patrolMode=="right" then return rightWaypoints
-    elseif patrolMode=="left" then return leftWaypoints end
-    return {}
-end
-local function startPatrol(mode)
-    patrolMode=mode; currentWaypoint=1
-    if patrolConn then patrolConn:Disconnect() end
-    patrolConn=RunService.Heartbeat:Connect(function()
-        local c=LocalPlayer.Character; if not c then return end
-        local rp=c:FindFirstChild("HumanoidRootPart"); if not rp then return end
-        local wps=getCurrentWaypoints(); if #wps==0 then return end
-        local tp=wps[currentWaypoint]
-        local txz=Vector3.new(tp.X,0,tp.Z)
-        local cxz=Vector3.new(rp.Position.X,0,rp.Position.Z)
-        if (txz-cxz).Magnitude>3 then
-            local md=(txz-cxz).Unit
-            rp.AssemblyLinearVelocity=Vector3.new(md.X*NORMAL_SPEED,rp.AssemblyLinearVelocity.Y,md.Z*NORMAL_SPEED)
-        else
-            currentWaypoint=currentWaypoint>=#wps and 1 or currentWaypoint+1
+local function startAutoLeft()
+    if autoLeftConnection then autoLeftConnection:Disconnect() end
+    autoLeftPhase = 1
+    autoLeftConnection = RunService.Heartbeat:Connect(function()
+        if not AutoLeftEnabled then return end
+        local c = LocalPlayer.Character
+        if not c then return end
+        local rp = c:FindFirstChild("HumanoidRootPart")
+        local hum = c:FindFirstChildOfClass("Humanoid")
+        if not rp or not hum then return end
+        
+        local spd = NORMAL_SPEED
+        if autoLeftPhase == 1 then
+            local tgt = Vector3.new(POSITION_L1.X, rp.Position.Y, POSITION_L1.Z)
+            if (tgt - rp.Position).Magnitude < 1 then
+                autoLeftPhase = 2
+                local d = (POSITION_L2 - rp.Position)
+                local mv = Vector3.new(d.X, 0, d.Z).Unit
+                hum:Move(mv, false)
+                rp.AssemblyLinearVelocity = Vector3.new(mv.X * spd, rp.AssemblyLinearVelocity.Y, mv.Z * spd)
+                return
+            end
+            local d = (POSITION_L1 - rp.Position)
+            local mv = Vector3.new(d.X, 0, d.Z).Unit
+            hum:Move(mv, false)
+            rp.AssemblyLinearVelocity = Vector3.new(mv.X * spd, rp.AssemblyLinearVelocity.Y, mv.Z * spd)
+        elseif autoLeftPhase == 2 then
+            local tgt = Vector3.new(POSITION_L2.X, rp.Position.Y, POSITION_L2.Z)
+            if (tgt - rp.Position).Magnitude < 1 then
+                hum:Move(Vector3.zero, false)
+                rp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                AutoLeftEnabled = false
+                Enabled.AutoLeftEnabled = false
+                if autoLeftConnection then
+                    autoLeftConnection:Disconnect()
+                    autoLeftConnection = nil
+                end
+                autoLeftPhase = 1
+                if _G_AL_swBg and _G_AL_swCircle then
+                    _G_AL_swBg.BackgroundColor3 = C_SW_OFF
+                    _G_AL_swCircle.Position = UDim2.new(0, 3, 0.5, -8)
+                end
+                if MobileButtons["A.LEFT"] then MobileButtons["A.LEFT"].setState(false) end
+                faceSouth()
+                return
+            end
+            local d = (POSITION_L2 - rp.Position)
+            local mv = Vector3.new(d.X, 0, d.Z).Unit
+            hum:Move(mv, false)
+            rp.AssemblyLinearVelocity = Vector3.new(mv.X * spd, rp.AssemblyLinearVelocity.Y, mv.Z * spd)
         end
     end)
 end
-local function stopPatrol()
-    patrolMode="none"; currentWaypoint=1
-    if patrolConn then patrolConn:Disconnect(); patrolConn=nil end
-    local c=LocalPlayer.Character; if not c then return end
-    local rp=c:FindFirstChild("HumanoidRootPart")
-    if rp then rp.AssemblyLinearVelocity=Vector3.new(0,rp.AssemblyLinearVelocity.Y,0) end
-end
-local function startAutoLeft()
-    AutoLeftEnabled=true; Enabled.AutoLeftEnabled=true; startPatrol("left")
-end
+
 local function stopAutoLeft()
-    AutoLeftEnabled=false; Enabled.AutoLeftEnabled=false
-    if patrolMode=="left" then stopPatrol() end
+    if autoLeftConnection then
+        autoLeftConnection:Disconnect()
+        autoLeftConnection = nil
+    end
+    autoLeftPhase = 1
+    local c = LocalPlayer.Character
+    if c then
+        local hum = c:FindFirstChildOfClass("Humanoid")
+        if hum then hum:Move(Vector3.zero, false) end
+    end
 end
+
 local function startAutoRight()
-    AutoRightEnabled=true; Enabled.AutoRightEnabled=true; startPatrol("right")
+    if autoRightConnection then autoRightConnection:Disconnect() end
+    autoRightPhase = 1
+    autoRightConnection = RunService.Heartbeat:Connect(function()
+        if not AutoRightEnabled then return end
+        local c = LocalPlayer.Character
+        if not c then return end
+        local rp = c:FindFirstChild("HumanoidRootPart")
+        local hum = c:FindFirstChildOfClass("Humanoid")
+        if not rp or not hum then return end
+        
+        local spd = NORMAL_SPEED
+        if autoRightPhase == 1 then
+            local tgt = Vector3.new(POSITION_R1.X, rp.Position.Y, POSITION_R1.Z)
+            if (tgt - rp.Position).Magnitude < 1 then
+                autoRightPhase = 2
+                local d = (POSITION_R2 - rp.Position)
+                local mv = Vector3.new(d.X, 0, d.Z).Unit
+                hum:Move(mv, false)
+                rp.AssemblyLinearVelocity = Vector3.new(mv.X * spd, rp.AssemblyLinearVelocity.Y, mv.Z * spd)
+                return
+            end
+            local d = (POSITION_R1 - rp.Position)
+            local mv = Vector3.new(d.X, 0, d.Z).Unit
+            hum:Move(mv, false)
+            rp.AssemblyLinearVelocity = Vector3.new(mv.X * spd, rp.AssemblyLinearVelocity.Y, mv.Z * spd)
+        elseif autoRightPhase == 2 then
+            local tgt = Vector3.new(POSITION_R2.X, rp.Position.Y, POSITION_R2.Z)
+            if (tgt - rp.Position).Magnitude < 1 then
+                hum:Move(Vector3.zero, false)
+                rp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                AutoRightEnabled = false
+                Enabled.AutoRightEnabled = false
+                if autoRightConnection then
+                    autoRightConnection:Disconnect()
+                    autoRightConnection = nil
+                end
+                autoRightPhase = 1
+                if _G_AR_swBg and _G_AR_swCircle then
+                    _G_AR_swBg.BackgroundColor3 = C_SW_OFF
+                    _G_AR_swCircle.Position = UDim2.new(0, 3, 0.5, -8)
+                end
+                if MobileButtons["A.RIGHT"] then MobileButtons["A.RIGHT"].setState(false) end
+                faceNorth()
+                return
+            end
+            local d = (POSITION_R2 - rp.Position)
+            local mv = Vector3.new(d.X, 0, d.Z).Unit
+            hum:Move(mv, false)
+            rp.AssemblyLinearVelocity = Vector3.new(mv.X * spd, rp.AssemblyLinearVelocity.Y, mv.Z * spd)
+        end
+    end)
 end
+
 local function stopAutoRight()
-    AutoRightEnabled=false; Enabled.AutoRightEnabled=false
-    if patrolMode=="right" then stopPatrol() end
+    if autoRightConnection then
+        autoRightConnection:Disconnect()
+        autoRightConnection = nil
+    end
+    autoRightPhase = 1
+    local c = LocalPlayer.Character
+    if c then
+        local hum = c:FindFirstChildOfClass("Humanoid")
+        if hum then hum:Move(Vector3.zero, false) end
+    end
 end
 
 -- Bat System
@@ -850,7 +918,7 @@ local function flyToFrontOfTarget(targetHRP)
     local forward = targetHRP.CFrame.LookVector
     local frontPos = targetHRP.Position + forward * 1.5
     local direction = (frontPos - hrp.Position).Unit
-    hrp.AssemblyLinearVelocity = Vector3.new(direction.X*56.5, direction.Y*56.5, direction.Z*56.5)
+    hrp.Velocity = Vector3.new(direction.X * 56.5, direction.Y * 56.5, direction.Z * 56.5)
 end
 
 -- Settings Functions
@@ -886,53 +954,53 @@ end
 -- Config Save/Load
 local function saveConfig()
     local cfg = {
-        normalSpeed=NORMAL_SPEED, carrySpeed=CARRY_SPEED,
-        fovValue=FOV_VALUE, uiScale=UI_SCALE,
-        autoBatKey=Keybinds.AutoBat.Name,
-        speedToggleKey=Keybinds.SpeedToggle.Name,
-        autoLeftKey=Keybinds.AutoLeft.Name,
-        autoRightKey=Keybinds.AutoRight.Name,
-        infiniteJumpKey=Keybinds.InfiniteJump.Name,
-        floatKey=Keybinds.Float.Name,
-        autoStealEnabled=Enabled.AutoSteal,
-        grabRadius=Values.STEAL_RADIUS,
-        stealDuration=Values.STEAL_DURATION,
-        antiRagdoll=Enabled.AntiRagdoll,
-        infiniteJump=Enabled.InfiniteJump,
-        galaxyGravity=Values.GalaxyGravityPercent,
-        hopPower=Values.HOP_POWER,
-        optimizer=Enabled.Optimizer,
-        unwalk=Enabled.Unwalk,
-        shinyGraphics=Enabled.ShinyGraphics,
-        autoLeftEnabled=Enabled.AutoLeftEnabled,
-        autoRightEnabled=Enabled.AutoRightEnabled,
-        floatEnabled=floatEnabled, floatHeight=floatHeight,
-        rightWaypoints=rightWaypointData, leftWaypoints=leftWaypointData,
+        normalSpeed = NORMAL_SPEED,
+        carrySpeed = CARRY_SPEED,
+        fovValue = FOV_VALUE,
+        uiScale = UI_SCALE,
+        autoBatKey = Keybinds.AutoBat.Name,
+        speedToggleKey = Keybinds.SpeedToggle.Name,
+        autoLeftKey = Keybinds.AutoLeft.Name,
+        autoRightKey = Keybinds.AutoRight.Name,
+        infiniteJumpKey = Keybinds.InfiniteJump.Name,
+        floatKey = Keybinds.Float.Name,
+        autoStealEnabled = Enabled.AutoSteal,
+        grabRadius = Values.STEAL_RADIUS,
+        stealDuration = Values.STEAL_DURATION,
+        antiRagdoll = Enabled.AntiRagdoll,
+        infiniteJump = Enabled.InfiniteJump,
+        galaxyGravity = Values.GalaxyGravityPercent,
+        hopPower = Values.HOP_POWER,
+        optimizer = Enabled.Optimizer,
+        unwalk = Enabled.Unwalk,
+        shinyGraphics = Enabled.ShinyGraphics,
+        autoLeftEnabled = Enabled.AutoLeftEnabled,
+        autoRightEnabled = Enabled.AutoRightEnabled,
+        floatEnabled = floatEnabled,
+        floatHeight = floatHeight,
     }
-    task.spawn(function()
-        local ok=false
-        if writefile then
-            ok=pcall(function()
-                writefile("SpadeHubConfig.json", HttpService:JSONEncode(cfg))
-            end)
-        end
-        if saveConfigBtn then
-            saveConfigBtn.Text    = ok and "Saved!" or "No writefile"
-            saveConfigBtn.TextColor3 = ok and Color3.fromRGB(0,200,80) or Color3.fromRGB(220,50,50)
-            task.delay(2, function()
-                if saveConfigBtn then
-                    saveConfigBtn.Text="Save Config"
-                    saveConfigBtn.TextColor3=C_WHITE
-                end
-            end)
-        end
-    end)
+    
+    local ok = false
+    if writefile then
+        pcall(function()
+            writefile("K7HubConfig.json", HttpService:JSONEncode(cfg))
+            ok = true
+        end)
+    end
+    
+    if saveConfigBtn then
+        local prev = saveConfigBtn.Text
+        saveConfigBtn.Text = ok and "Saved!" or "Failed!"
+        task.wait(1.5)
+        saveConfigBtn.Text = prev
+    end
+    return ok
 end
 
 local function loadConfig()
-    if not (isfile and isfile("SpadeHubConfig.json")) then return end
+    if not (isfile and isfile("K7HubConfig.json")) then return end
     local ok, cfg = pcall(function()
-        return HttpService:JSONDecode(readfile("SpadeHubConfig.json"))
+        return HttpService:JSONDecode(readfile("K7HubConfig.json"))
     end)
     if not ok or not cfg then return end
     
@@ -986,7 +1054,7 @@ end
 
 -- Main GUI
 gui = Instance.new("ScreenGui")
-gui.Name = "SPADEHUBGUI"
+gui.Name = "K7HubGUI"
 gui.ResetOnSpawn = false
 gui.DisplayOrder = 10
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -994,23 +1062,6 @@ gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 -- MOBILE DRAGGABLE BUTTONS (FIXED POSITIONING - Center Screen)
 local isMobile = UserInputService.TouchEnabled
 local MobileButtons = {}
-
--- Ground TP helper
-local function findGroundBelow(originPos, char)
-    local params = RaycastParams.new()
-    params.FilterDescendantsInstances = {char}
-    params.FilterType = Enum.RaycastFilterType.Exclude
-    local res = workspace:Raycast(originPos, Vector3.new(0,-5000,0), params)
-    if res then return res.Position.Y end
-    for _, off in ipairs({
-        Vector3.new(1.5,0,0),Vector3.new(-1.5,0,0),
-        Vector3.new(0,0,1.5),Vector3.new(0,0,-1.5),
-    }) do
-        res = workspace:Raycast(originPos+off, Vector3.new(0,-5000,0), params)
-        if res then return res.Position.Y end
-    end
-    return nil
-end
 
 if true then -- mobile buttons (always enabled)
     local mobileGui = Instance.new("ScreenGui")
@@ -1029,7 +1080,7 @@ if true then -- mobile buttons (always enabled)
 
     -- Two vertical columns on the RIGHT side of the screen
     -- Col 1 (left col): FLOAT, CARRY, BAT, UI     (top to bottom)
-    -- Col 2 (right col): A.LEFT, A.RIGHT, TP DOWN, LOCK (top to bottom)
+    -- Col 2 (right col): A.LEFT, A.RIGHT, INF JMP, LOCK (top to bottom)
     local MARGIN = 10  -- gap from right/bottom screen edge
     local col2X = vp.X - BTN_W - MARGIN              -- rightmost column
     local col1X = col2X - BTN_W - GAP                -- column to its left
@@ -1044,8 +1095,8 @@ if true then -- mobile buttons (always enabled)
         btn.Name = name
         btn.Size = UDim2.new(0, BTN_W, 0, BTN_H)
         btn.Position = UDim2.new(0, startX, 0, startY)
-        btn.BackgroundColor3 = Color3.fromRGB(255,255,255)
-        btn.BackgroundTransparency = 0
+        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+        btn.BackgroundTransparency = 0.1
         btn.BorderSizePixel = 0
         btn.Text = name
         btn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1069,9 +1120,9 @@ if true then -- mobile buttons (always enabled)
                 btn.BackgroundTransparency = 0
                 btn.TextColor3 = Color3.fromRGB(255, 255, 255)
             else
-                btn.BackgroundColor3 = Color3.fromRGB(255,255,255)
-                btn.BackgroundTransparency = 0
-                btn.TextColor3 = Color3.fromRGB(160,0,0)
+                btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                btn.BackgroundTransparency = 0.1
+                btn.TextColor3 = Color3.fromRGB(200, 200, 200)
             end
         end
 
@@ -1151,7 +1202,7 @@ if true then -- mobile buttons (always enabled)
         if main then main.Visible = not on end
     end)
 
-    -- COL 2: A.LEFT, A.RIGHT, TP DOWN, LOCK (stacked top to bottom, right column)
+    -- COL 2: A.LEFT, A.RIGHT, INF JMP, LOCK (stacked top to bottom, right column)
     createMobileButton("A.LEFT", col2X, startY + (BTN_H+GAP)*0, Color3.fromRGB(80, 200, 120), function(on)
         if setAutoLeft then
             setAutoLeft(on)
@@ -1164,86 +1215,22 @@ if true then -- mobile buttons (always enabled)
         end
     end)
 
-    -- TP DOWN (inf jump is still in the menu)
-    do
-        local tpBtn = Instance.new("TextButton")
-        tpBtn.Name = "TPDOWN"
-        tpBtn.Size = UDim2.new(0, BTN_W, 0, BTN_H)
-        tpBtn.Position = UDim2.new(0, col2X, 0, startY + (BTN_H+GAP)*2)
-        tpBtn.BackgroundColor3 = Color3.fromRGB(255,255,255)
-        tpBtn.BackgroundTransparency = 0
-        tpBtn.BorderSizePixel = 0
-        tpBtn.Text = "TP DOWN"
-        tpBtn.TextColor3 = Color3.fromRGB(200,20,20)
-        tpBtn.Font = Enum.Font.GothamBlack
-        tpBtn.TextSize = 14
-        tpBtn.AutoButtonColor = false
-        tpBtn.ZIndex = 10001
-        tpBtn.Parent = mobileGui
-        Instance.new("UICorner", tpBtn).CornerRadius = UDim.new(0,12)
-        local tpStroke = Instance.new("UIStroke", tpBtn)
-        tpStroke.Color = Color3.fromRGB(200,20,20); tpStroke.Thickness = 2.5
+    createMobileButton("INF JMP", col2X, startY + (BTN_H+GAP)*2, Color3.fromRGB(255, 220, 0), function(on)
+        Enabled.InfiniteJump = on
+        if VisualSetters.InfiniteJump then VisualSetters.InfiniteJump(on) end
+        if on then startInfiniteJump() else stopInfiniteJump() end
+    end)
 
-        local tpIsOn = false
-        local function setTPColor(on)
-            tpIsOn = on
-            if on then
-                tpBtn.BackgroundColor3 = Color3.fromRGB(200,20,20)
-                tpBtn.TextColor3 = Color3.fromRGB(255,255,255)
-            else
-                tpBtn.BackgroundColor3 = Color3.fromRGB(255,255,255)
-                tpBtn.TextColor3 = Color3.fromRGB(200,20,20)
-            end
-        end
-        local function doTP()
-            local char=LocalPlayer.Character; if not char then return end
-            local rp=char:FindFirstChild("HumanoidRootPart"); if not rp then return end
-            local params=RaycastParams.new()
-            params.FilterDescendantsInstances={char}
-            params.FilterType=Enum.RaycastFilterType.Exclude
-            local res=workspace:Raycast(rp.Position,Vector3.new(0,-5000,0),params)
-            if res and rp.Position.Y-res.Position.Y>=3 then
-                rp.CFrame=CFrame.new(rp.Position.X,res.Position.Y+3,rp.Position.Z)*(rp.CFrame-rp.CFrame.Position)
-                rp.AssemblyLinearVelocity=Vector3.new(0,0,0)
-            end
-        end
-        local function onPress()
-            setTPColor(true); doTP()
-            task.delay(0.4, function() setTPColor(false) end)
-        end
-        tpBtn.MouseButton1Click:Connect(onPress)
-        tpBtn.InputBegan:Connect(function(inp)
-            if inp.UserInputType==Enum.UserInputType.Touch then onPress() end
-        end)
-        -- draggable
-        local drag,ds,sp=false,nil,nil
-        tpBtn.InputBegan:Connect(function(inp)
-            if inp.UserInputType==Enum.UserInputType.Touch or inp.UserInputType==Enum.UserInputType.MouseButton1 then
-                drag=true; ds=inp.Position; sp=tpBtn.Position
-            end
-        end)
-        tpBtn.InputChanged:Connect(function(inp)
-            if not drag or buttonsLocked then return end
-            if inp.UserInputType==Enum.UserInputType.Touch or inp.UserInputType==Enum.UserInputType.MouseMovement then
-                local d=inp.Position-ds
-                tpBtn.Position=UDim2.new(0,sp.X.Offset+d.X,0,sp.Y.Offset+d.Y)
-            end
-        end)
-        tpBtn.InputEnded:Connect(function(inp)
-            if inp.UserInputType==Enum.UserInputType.Touch or inp.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end
-        end)
-    end
-
-    -- LOCK button Ã¢â‚¬â€ no toggle state stored in MobileButtons, just a local
+    -- LOCK button â€” no toggle state stored in MobileButtons, just a local
     do
         local lockBtn = Instance.new("TextButton")
         lockBtn.Name = "LOCK"
         lockBtn.Size = UDim2.new(0, BTN_W, 0, BTN_H)
         lockBtn.Position = UDim2.new(0, MARGIN, 0, startY + (BTN_H+GAP)*3)
-        lockBtn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+        lockBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         lockBtn.BackgroundTransparency = 0.1
         lockBtn.BorderSizePixel = 0
-        lockBtn.Text = "UNLOCK"
+        lockBtn.Text = "ðŸ”“ UNLOCK"
         lockBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
         lockBtn.Font = Enum.Font.GothamBlack
         lockBtn.TextSize = 13
@@ -1258,13 +1245,13 @@ if true then -- mobile buttons (always enabled)
         lockBtn.MouseButton1Click:Connect(function()
             buttonsLocked = not buttonsLocked
             if buttonsLocked then
-                lockBtn.Text = "LOCK"
+                lockBtn.Text = "ðŸ”’ LOCK"
                 lockBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
                 lockBtn.BackgroundTransparency = 0
                 lockBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
             else
-                lockBtn.Text = "UNLOCK"
-                lockBtn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+                lockBtn.Text = "ðŸ”“ UNLOCK"
+                lockBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 lockBtn.BackgroundTransparency = 0.1
                 lockBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
             end
@@ -1274,13 +1261,13 @@ if true then -- mobile buttons (always enabled)
             if inp.UserInputType == Enum.UserInputType.Touch then
                 buttonsLocked = not buttonsLocked
                 if buttonsLocked then
-                    lockBtn.Text = "LOCK"
+                    lockBtn.Text = "ðŸ”’ LOCK"
                     lockBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
                     lockBtn.BackgroundTransparency = 0
                     lockBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
                 else
-                    lockBtn.Text = "UNLOCK"
-                    lockBtn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+                    lockBtn.Text = "ðŸ”“ UNLOCK"
+                    lockBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                     lockBtn.BackgroundTransparency = 0.1
                     lockBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
                 end
@@ -1288,7 +1275,7 @@ if true then -- mobile buttons (always enabled)
         end)
     end
 
-    print("â€œ MOBILE BUTTONS: 2 horizontal rows, rectangles, lock button, fixed dragging")
+    print("âœ“ MOBILE BUTTONS: 2 horizontal rows, rectangles, lock button, fixed dragging")
 end
 
 
@@ -1313,7 +1300,7 @@ end
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 24)
 
 local mainStroke = Instance.new("UIStroke", main)
-mainStroke.Color = Color3.fromRGB(200,20,20)
+mainStroke.Color = Color3.fromRGB(60, 0, 90)
 mainStroke.Thickness = 1.5
 
 -- Dragging (Mouse + Touch)
@@ -1340,29 +1327,45 @@ do
     end)
 end
 
--- Header: SPADE-HUB logo pill top-left
-local logoBg = Instance.new("Frame")
-logoBg.Size = UDim2.new(0, 136, 0, 36)
-logoBg.Position = UDim2.new(0, 12, 0, 14)
-logoBg.BackgroundColor3 = Color3.fromRGB(200,20,20)
-logoBg.BorderSizePixel = 0
-logoBg.ZIndex = 5
-logoBg.Parent = main
-Instance.new("UICorner", logoBg).CornerRadius = UDim.new(0, 18)
-local logoTxt = Instance.new("TextLabel")
-logoTxt.Size = UDim2.new(1, 0, 1, 0)
-logoTxt.BackgroundTransparency = 1
-logoTxt.Text = "SPADE-HUB"
-logoTxt.TextColor3 = Color3.fromRGB(255,255,255)
-logoTxt.Font = Enum.Font.GothamBlack
-logoTxt.TextSize = 16
-logoTxt.TextXAlignment = Enum.TextXAlignment.Center
-logoTxt.ZIndex = 6
-logoTxt.Parent = logoBg
+-- Header
+local batEmoji = Instance.new("TextLabel")
+batEmoji.Size = UDim2.new(0, 40, 0, 40)
+batEmoji.Position = UDim2.new(0, 14, 0, 8)
+batEmoji.BackgroundTransparency = 1
+batEmoji.Text = "ðŸ¦‡"
+batEmoji.TextColor3 = C_PURPLE
+batEmoji.Font = Enum.Font.GothamBlack
+batEmoji.TextSize = 32
+batEmoji.ZIndex = 4
+batEmoji.Parent = main
+
+local titleLbl = Instance.new("TextLabel")
+titleLbl.Size = UDim2.new(1, 0, 0, 36)
+titleLbl.Position = UDim2.new(0, 0, 0, 12)
+titleLbl.BackgroundTransparency = 1
+titleLbl.Text = "K7 HUB"
+titleLbl.TextColor3 = C_PURPLE
+titleLbl.Font = Enum.Font.GothamBlack
+titleLbl.TextSize = 28
+titleLbl.TextXAlignment = Enum.TextXAlignment.Center
+titleLbl.ZIndex = 4
+titleLbl.Parent = main
+
+local byLbl = Instance.new("TextLabel")
+byLbl.Size = UDim2.new(1, 0, 0, 14)
+byLbl.Position = UDim2.new(0, 0, 0, 50)
+byLbl.BackgroundTransparency = 1
+byLbl.Text = "tyke313"
+byLbl.TextColor3 = C_DIM
+byLbl.Font = Enum.Font.GothamBold
+byLbl.TextSize = 11
+byLbl.TextXAlignment = Enum.TextXAlignment.Center
+byLbl.ZIndex = 4
+byLbl.Parent = main
 
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 28, 0, 28)
-closeBtn.Position = UDim2.new(1, -32, 0, 8)
+closeBtn.Position = UDim2.new(1, -38, 0, 12)
 closeBtn.BackgroundTransparency = 1
 closeBtn.Text = "x"
 closeBtn.TextColor3 = C_DIM
@@ -1387,17 +1390,17 @@ closeBtn.InputBegan:Connect(function(inp)
 end)
 
 local sep = Instance.new("Frame")
-sep.Size = UDim2.new(1, -24, 0, 1)
-sep.Position = UDim2.new(0, 12, 0, 58)
-sep.BackgroundColor3 = Color3.fromRGB(220,180,180)
+sep.Size = UDim2.new(1, -40, 0, 1)
+sep.Position = UDim2.new(0, 20, 0, 68)
+sep.BackgroundColor3 = Color3.fromRGB(30, 0, 45)
 sep.BorderSizePixel = 0
 sep.ZIndex = 3
 sep.Parent = main
 
 -- Scrolling Frame
 local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, 0, 1, -62)
-scroll.Position = UDim2.new(0, 0, 0, 62)
+scroll.Size = UDim2.new(1, 0, 1, -74)
+scroll.Position = UDim2.new(0, 0, 0, 74)
 scroll.BackgroundTransparency = 1
 scroll.BorderSizePixel = 0
 scroll.ScrollBarThickness = 6
@@ -1557,7 +1560,7 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
         
         local dropInner = Instance.new("Frame")
         dropInner.Size = UDim2.new(1, 0, 1, 0)
-        dropInner.BackgroundColor3 = Color3.fromRGB(248,240,240)
+        dropInner.BackgroundColor3 = Color3.fromRGB(10, 0, 16)
         dropInner.BorderSizePixel = 0
         dropInner.ZIndex = 4
         dropInner.Parent = dropPanel
@@ -1598,7 +1601,7 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
         dropInput = Instance.new("TextBox")
         dropInput.Size = UDim2.new(0, 58, 0, 24)
         dropInput.Position = UDim2.new(1, -58, 0, 0)
-        dropInput.BackgroundColor3 = Color3.fromRGB(240,230,230)
+        dropInput.BackgroundColor3 = Color3.fromRGB(20, 0, 30)
         dropInput.BorderSizePixel = 0
         dropInput.Text = tostring(Values.STEAL_RADIUS)
         dropInput.TextColor3 = C_PURPLE
@@ -1650,7 +1653,7 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
         local durationInput = Instance.new("TextBox")
         durationInput.Size = UDim2.new(0, 58, 0, 24)
         durationInput.Position = UDim2.new(1, -58, 0, 0)
-        durationInput.BackgroundColor3 = Color3.fromRGB(240,230,230)
+        durationInput.BackgroundColor3 = Color3.fromRGB(20, 0, 30)
         durationInput.BorderSizePixel = 0
         durationInput.Text = tostring(Values.STEAL_DURATION)
         durationInput.TextColor3 = C_PURPLE
@@ -1744,12 +1747,10 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
             end
             
             if pressDuration < 0.5 and not longPressTriggered then
-                -- Read Enabled table as source of truth so external resets stay in sync
-                local next = not (Enabled[enabledKey] or false)
-                Enabled[enabledKey] = next
-                isOn = next
-                setVisual(next)
-                if onToggle then onToggle(next) end
+                isOn = not isOn
+                Enabled[enabledKey] = isOn
+                setVisual(isOn)
+                if onToggle then onToggle(isOn) end
             end
         end
     end
@@ -1786,7 +1787,7 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
     clk.MouseEnter:Connect(function()
         playTick()
         TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE2}):Play()
-        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(255,230,230)}):Play()
+        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(18, 0, 26)}):Play()
     end)
     clk.MouseLeave:Connect(function()
         TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE}):Play()
@@ -1890,7 +1891,7 @@ local function makeManualRow(keybindRefName, labelTxt, order)
     clk.MouseEnter:Connect(function()
         playTick()
         TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE2}):Play()
-        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(255,230,230)}):Play()
+        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(18, 0, 26)}):Play()
     end)
     clk.MouseLeave:Connect(function()
         TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE}):Play()
@@ -1901,7 +1902,7 @@ local function makeManualRow(keybindRefName, labelTxt, order)
         if inp.UserInputType == Enum.UserInputType.Touch then
             playTick()
             TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE2}):Play()
-            TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(255,230,230)}):Play()
+            TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(18, 0, 26)}):Play()
         end
     end)
     
@@ -1926,7 +1927,7 @@ local function makeSectionLbl(txt, order)
     l.Size = UDim2.new(1, 0, 1, 0)
     l.BackgroundTransparency = 1
     l.Text = txt:upper()
-    l.TextColor3 = Color3.fromRGB(180,50,50)
+    l.TextColor3 = Color3.fromRGB(55, 0, 80)
     l.Font = Enum.Font.GothamBold
     l.TextSize = 10
     l.TextXAlignment = Enum.TextXAlignment.Left
@@ -1984,61 +1985,6 @@ setAutoRight = function(on)
     Enabled.AutoRightEnabled = on
     if _arVisual then _arVisual(on) end
     if on then startAutoRight() else stopAutoRight() end
-end
-
--- Waypoint editors
-do
-    local function wpDivider(txt)
-        local f=Instance.new("Frame",vstack); f.Size=UDim2.new(1,0,0,22)
-        f.BackgroundColor3=Color3.fromRGB(200,20,20); f.BorderSizePixel=0
-        Instance.new("UICorner",f).CornerRadius=UDim.new(0,8)
-        local l=Instance.new("TextLabel",f); l.Size=UDim2.new(1,0,1,0)
-        l.BackgroundTransparency=1; l.Text=txt; l.TextColor3=Color3.fromRGB(255,255,255)
-        l.Font=Enum.Font.GothamBold; l.TextSize=11; l.TextXAlignment=Enum.TextXAlignment.Center
-    end
-    local function makeWPEditor(parent, labelTxt, data, side, index)
-        local row=Instance.new("Frame",parent); row.Size=UDim2.new(1,0,0,34)
-        row.BackgroundColor3=C_ROW_BG; row.BorderSizePixel=0
-        Instance.new("UICorner",row).CornerRadius=UDim.new(0,8)
-        local ist=Instance.new("UIStroke",row); ist.Color=C_PURPLE; ist.Thickness=1; ist.Transparency=0.5
-        local lbl=Instance.new("TextLabel",row); lbl.Size=UDim2.new(0,26,1,0); lbl.Position=UDim2.new(0,4,0,0)
-        lbl.BackgroundTransparency=1; lbl.Text=labelTxt; lbl.TextColor3=C_PURPLE
-        lbl.Font=Enum.Font.GothamBold; lbl.TextSize=10; lbl.TextXAlignment=Enum.TextXAlignment.Left
-        local coords={"x","y","z"}; local fields={}
-        for i,coord in ipairs(coords) do
-            local box=Instance.new("TextBox",row)
-            box.Size=UDim2.new(0,60,0,24); box.Position=UDim2.new(0,28+(i-1)*64,0.5,-12)
-            box.BackgroundColor3=Color3.fromRGB(240,230,230); box.BorderSizePixel=0
-            Instance.new("UICorner",box).CornerRadius=UDim.new(0,6)
-            Instance.new("UIStroke",box).Color=C_PURPLE
-            box.Text=tostring(data[coord]); box.TextColor3=Color3.fromRGB(140,0,0)
-            box.Font=Enum.Font.Gotham; box.TextSize=9; box.PlaceholderText=coord; box.ClearTextOnFocus=false
-            box.FocusLost:Connect(function()
-                local v=tonumber(box.Text)
-                if v then
-                    data[coord]=v
-                    if side=="right" then rightWaypoints=buildWaypoints(rightWaypointData)
-                    else leftWaypoints=buildWaypoints(leftWaypointData) end
-                else box.Text=tostring(data[coord]) end
-            end)
-            fields[coord]=box
-        end
-        if not waypointFields[side] then waypointFields[side]={} end
-        waypointFields[side][index]=fields
-        local gap=Instance.new("Frame",parent); gap.Size=UDim2.new(1,0,0,3); gap.BackgroundTransparency=1
-    end
-
-    wpDivider("RIGHT WAYPOINTS")
-    local wR=Instance.new("Frame",vstack); wR.Size=UDim2.new(1,0,0,0)
-    wR.AutomaticSize=Enum.AutomaticSize.Y; wR.BackgroundTransparency=1; wR.BorderSizePixel=0
-    Instance.new("UIListLayout",wR).Padding=UDim.new(0,0)
-    for i,d in ipairs(rightWaypointData) do makeWPEditor(wR,"R"..i,d,"right",i) end
-
-    wpDivider("LEFT WAYPOINTS")
-    local wL=Instance.new("Frame",vstack); wL.Size=UDim2.new(1,0,0,0)
-    wL.AutomaticSize=Enum.AutomaticSize.Y; wL.BackgroundTransparency=1; wL.BorderSizePixel=0
-    Instance.new("UIListLayout",wL).Padding=UDim.new(0,0)
-    for i,d in ipairs(leftWaypointData) do makeWPEditor(wL,"L"..i,d,"left",i) end
 end
 
 -- Speed Toggle
@@ -2105,7 +2051,7 @@ local function makeInputBox(parent, lbl, defaultTxt, onDone)
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(0, 70, 0, 26)
     box.Position = UDim2.new(1, -80, 0.5, -13)
-    box.BackgroundColor3 = Color3.fromRGB(240,230,230)
+    box.BackgroundColor3 = Color3.fromRGB(14, 0, 22)
     box.BorderSizePixel = 0
     box.Text = defaultTxt
     box.TextColor3 = C_PURPLE
@@ -2176,7 +2122,7 @@ local function makeSlider(parent, lbl, minVal, maxVal, defaultVal, onChanged)
     local trackBg = Instance.new("Frame")
     trackBg.Size = UDim2.new(0, 200, 0, 6)
     trackBg.Position = UDim2.new(0.38, 0, 0.5, -3)
-    trackBg.BackgroundColor3 = Color3.fromRGB(240,230,230)
+    trackBg.BackgroundColor3 = Color3.fromRGB(14, 0, 22)
     trackBg.BorderSizePixel = 0
     trackBg.ZIndex = 4
     trackBg.Parent = wrap
@@ -2338,7 +2284,7 @@ local function makeKeybindRow(parent, lbl, keybindRefName, onChanged)
     local kbBtn = Instance.new("TextButton")
     kbBtn.Size = UDim2.new(0, 70, 0, 26)
     kbBtn.Position = UDim2.new(1, -80, 0.5, -13)
-    kbBtn.BackgroundColor3 = Color3.fromRGB(240,230,230)
+    kbBtn.BackgroundColor3 = Color3.fromRGB(14, 0, 22)
     kbBtn.BorderSizePixel = 0
     kbBtn.Text = Keybinds[keybindRefName].Name
     kbBtn.TextColor3 = C_PURPLE
@@ -2517,7 +2463,7 @@ do
     fClk.MouseEnter:Connect(function()
         playTick()
         TweenService:Create(floatLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE2}):Play()
-        TweenService:Create(floatRow, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(255,230,230)}):Play()
+        TweenService:Create(floatRow, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(18, 0, 26)}):Play()
     end)
     fClk.MouseLeave:Connect(function()
         if not floatEnabled then
@@ -2564,6 +2510,9 @@ end)
 makeKeybindRow(kbWrap, "Auto Right", "AutoRight", function(kc)
     Keybinds.AutoRight = kc
 end)
+makeKeybindRow(kbWrap, "Infinite Jump", "InfiniteJump", function(kc)
+    Keybinds.InfiniteJump = kc
+end)
 makeKeybindRow(kbWrap, "Float", "Float", function(kc)
     Keybinds.Float = kc
 end)
@@ -2577,17 +2526,15 @@ saveGap.LayoutOrder = O()
 saveGap.Parent = vstack
 
 saveConfigBtn = Instance.new("TextButton")
-saveConfigBtn.Size = UDim2.new(1, 0, 0, 36)
-saveConfigBtn.BackgroundTransparency = 0
-saveConfigBtn.BackgroundColor3 = Color3.fromRGB(0,160,60)
+saveConfigBtn.Size = UDim2.new(1, 0, 0, 32)
+saveConfigBtn.BackgroundTransparency = 1
 saveConfigBtn.Text = "Save Config"
-saveConfigBtn.TextColor3 = C_WHITE
+saveConfigBtn.TextColor3 = C_DIM
 saveConfigBtn.Font = Enum.Font.GothamBold
 saveConfigBtn.TextSize = 13
 saveConfigBtn.LayoutOrder = O()
 saveConfigBtn.ZIndex = 4
 saveConfigBtn.Parent = vstack
-Instance.new("UICorner", saveConfigBtn).CornerRadius = UDim.new(0,10)
 
 saveConfigBtn.MouseButton1Click:Connect(function()
     saveConfig()
@@ -2609,14 +2556,14 @@ end)
 local progressBar = Instance.new("Frame", gui)
 progressBar.Size = UDim2.new(0, 460, 0, 72)
 progressBar.Position = UDim2.new(0.5, -230, 1, -90)
-progressBar.BackgroundColor3 = Color3.fromRGB(255,255,255)
+progressBar.BackgroundColor3 = C_BG
 progressBar.BorderSizePixel = 0
 progressBar.Active = true
 
 Instance.new("UICorner", progressBar).CornerRadius = UDim.new(0, 20)
 
 local pbStroke = Instance.new("UIStroke", progressBar)
-pbStroke.Color = Color3.fromRGB(200,20,20)
+pbStroke.Color = Color3.fromRGB(40, 0, 60)
 pbStroke.Thickness = 1.5
 
 if deviceType == "Mobile" then
@@ -2683,7 +2630,7 @@ radLbl.ZIndex = 3
 RadiusInput = Instance.new("TextBox", progressBar)
 RadiusInput.Size = UDim2.new(0, 48, 0, 20)
 RadiusInput.Position = UDim2.new(0, 68, 0, 32)
-RadiusInput.BackgroundColor3 = Color3.fromRGB(240,230,230)
+RadiusInput.BackgroundColor3 = Color3.fromRGB(14, 0, 20)
 RadiusInput.BorderSizePixel = 0
 RadiusInput.Text = tostring(Values.STEAL_RADIUS)
 RadiusInput.TextColor3 = C_PURPLE
@@ -2708,7 +2655,7 @@ end)
 local pTrack = Instance.new("Frame", progressBar)
 pTrack.Size = UDim2.new(1, -20, 0, 8)
 pTrack.Position = UDim2.new(0, 10, 1, -16)
-pTrack.BackgroundColor3 = Color3.fromRGB(240,230,230)
+pTrack.BackgroundColor3 = Color3.fromRGB(14, 0, 20)
 pTrack.BorderSizePixel = 0
 pTrack.ZIndex = 2
 
@@ -2791,11 +2738,11 @@ RunService.RenderStepped:Connect(function()
         local md = h.MoveDirection
         local spd = speedToggled and CARRY_SPEED or NORMAL_SPEED
         if md.Magnitude > 0 then
-            hrp.AssemblyLinearVelocity = Vector3.new(md.X*spd, hrp.AssemblyLinearVelocity.Y, md.Z*spd)
+            hrp.Velocity = Vector3.new(md.X * spd, hrp.Velocity.Y, md.Z * spd)
         end
     end
     if speedLbl then
-        speedLbl.Text = "Speed: " .. string.format("%.1f", Vector3.new(hrp.AssemblyLinearVelocity.X,0,hrp.AssemblyLinearVelocity.Z).Magnitude)
+        speedLbl.Text = "Speed: " .. string.format("%.1f", Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z).Magnitude)
     end
 end)
 
@@ -2865,8 +2812,9 @@ task.spawn(function()
         if MobileButtons["FLOAT"] and floatEnabled then MobileButtons["FLOAT"].setState(true) end
         if MobileButtons["CARRY"] and speedToggled then MobileButtons["CARRY"].setState(true) end
         if MobileButtons["BAT"] and autoBatToggled then MobileButtons["BAT"].setState(true) end
-        if MobileButtons["LEFT"] and Enabled.AutoLeftEnabled then MobileButtons["LEFT"].setState(true) end
-        if MobileButtons["RIGHT"] and Enabled.AutoRightEnabled then MobileButtons["RIGHT"].setState(true) end
+        if MobileButtons["A.LEFT"] and Enabled.AutoLeftEnabled then MobileButtons["A.LEFT"].setState(true) end
+        if MobileButtons["A.RIGHT"] and Enabled.AutoRightEnabled then MobileButtons["A.RIGHT"].setState(true) end
+        if MobileButtons["INF JMP"] and Enabled.InfiniteJump then MobileButtons["INF JMP"].setState(true) end
     end
 end)
 
@@ -2885,7 +2833,7 @@ local function setupChar(char)
         speedLbl = Instance.new("TextLabel", bb)
         speedLbl.Size = UDim2.new(1, 0, 1, 0)
         speedLbl.BackgroundTransparency = 1
-        speedLbl.TextColor3 = C_RED
+        speedLbl.TextColor3 = C_PURPLE
         speedLbl.Font = Enum.Font.GothamBold
         speedLbl.TextScaled = true
         speedLbl.TextStrokeTransparency = 0
@@ -2899,7 +2847,7 @@ LocalPlayer.CharacterAdded:Connect(setupChar)
 if LocalPlayer.Character then setupChar(LocalPlayer.Character) end
 
 print("SPADE HUB v4 - Loaded!")
-print("Ã¢Å“â€œ Mobile: 2 horizontal rows of rectangle buttons + LOCK button")
-print("Ã¢Å“â€œ Inf jump fixed for mobile (re-jumps on land)")
-print("Ã¢Å“â€œ A.LEFT/A.RIGHT auto-reset button when movement completes")
-print("Ã¢Å“â€œ Drag uses btn.InputChanged - joystick no longer moves buttons")
+print("âœ“ Mobile: 2 horizontal rows of rectangle buttons + LOCK button")
+print("âœ“ Inf jump fixed for mobile (re-jumps on land)")
+print("âœ“ A.LEFT/A.RIGHT auto-reset button when movement completes")
+print("âœ“ Drag uses btn.InputChanged - joystick no longer moves buttons")
