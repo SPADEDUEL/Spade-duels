@@ -125,14 +125,14 @@ local setAutoRight = nil  -- assigned when makeRow runs for Auto Right
 local ProgressLabel, ProgressPercentLabel, ProgressBarFill, RadiusInput, DurationInput
 local saveConfigBtn
 
--- Colors
-local C_BG = Color3.fromRGB(0, 0, 0)
-local C_PURPLE = Color3.fromRGB(178, 0, 255)
-local C_PURPLE2 = Color3.fromRGB(215, 90, 255)
-local C_DIM = Color3.fromRGB(100, 0, 145)
-local C_SW_OFF = Color3.fromRGB(28, 28, 28)
+-- Colors (white/red theme)
+local C_BG = Color3.fromRGB(255, 255, 255)
+local C_PURPLE = Color3.fromRGB(200, 20, 20)
+local C_PURPLE2 = Color3.fromRGB(240, 80, 80)
+local C_DIM = Color3.fromRGB(140, 0, 0)
+local C_SW_OFF = Color3.fromRGB(210, 210, 210)
 local C_WHITE = Color3.fromRGB(255, 255, 255)
-local C_ROW_BG = Color3.fromRGB(10, 0, 16)
+local C_ROW_BG = Color3.fromRGB(248, 240, 240)
 
 -- Utility Functions
 local function getHRP()
@@ -180,7 +180,7 @@ local function lustScanPlot(plot)
     end
 end
 
--- Initialize scanner â€” called once after game loads
+-- Initialize scanner Ã¢â‚¬â€ called once after game loads
 local function lustInitScanner()
     task.wait(2)
     local plots = workspace:WaitForChild("Plots", 10)
@@ -983,7 +983,7 @@ local function saveConfig()
     local ok = false
     if writefile then
         pcall(function()
-            writefile("K7HubConfig.json", HttpService:JSONEncode(cfg))
+            writefile("SPADEHubConfig.json", HttpService:JSONEncode(cfg))
             ok = true
         end)
     end
@@ -998,9 +998,9 @@ local function saveConfig()
 end
 
 local function loadConfig()
-    if not (isfile and isfile("K7HubConfig.json")) then return end
+    if not (isfile and isfile("SPADEHubConfig.json")) then return end
     local ok, cfg = pcall(function()
-        return HttpService:JSONDecode(readfile("K7HubConfig.json"))
+        return HttpService:JSONDecode(readfile("SPADEHubConfig.json"))
     end)
     if not ok or not cfg then return end
     
@@ -1054,7 +1054,7 @@ end
 
 -- Main GUI
 gui = Instance.new("ScreenGui")
-gui.Name = "K7HubGUI"
+gui.Name = "SPADEHubGUI"
 gui.ResetOnSpawn = false
 gui.DisplayOrder = 10
 gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
@@ -1095,8 +1095,8 @@ if true then -- mobile buttons (always enabled)
         btn.Name = name
         btn.Size = UDim2.new(0, BTN_W, 0, BTN_H)
         btn.Position = UDim2.new(0, startX, 0, startY)
-        btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        btn.BackgroundTransparency = 0.1
+        btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        btn.BackgroundTransparency = 0
         btn.BorderSizePixel = 0
         btn.Text = name
         btn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1120,9 +1120,9 @@ if true then -- mobile buttons (always enabled)
                 btn.BackgroundTransparency = 0
                 btn.TextColor3 = Color3.fromRGB(255, 255, 255)
             else
-                btn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                btn.BackgroundTransparency = 0.1
-                btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+                btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                btn.BackgroundTransparency = 0
+                btn.TextColor3 = Color3.fromRGB(180, 0, 0)
             end
         end
 
@@ -1221,17 +1221,17 @@ if true then -- mobile buttons (always enabled)
         if on then startInfiniteJump() else stopInfiniteJump() end
     end)
 
-    -- LOCK button â€” no toggle state stored in MobileButtons, just a local
+    -- LOCK button Ã¢â‚¬â€ no toggle state stored in MobileButtons, just a local
     do
         local lockBtn = Instance.new("TextButton")
         lockBtn.Name = "LOCK"
         lockBtn.Size = UDim2.new(0, BTN_W, 0, BTN_H)
         lockBtn.Position = UDim2.new(0, MARGIN, 0, startY + (BTN_H+GAP)*3)
-        lockBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-        lockBtn.BackgroundTransparency = 0.1
+        lockBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        lockBtn.BackgroundTransparency = 0
         lockBtn.BorderSizePixel = 0
-        lockBtn.Text = "ðŸ”“ UNLOCK"
-        lockBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+        lockBtn.Text = "UNLOCK"
+        lockBtn.TextColor3 = Color3.fromRGB(180, 0, 0)
         lockBtn.Font = Enum.Font.GothamBlack
         lockBtn.TextSize = 13
         lockBtn.AutoButtonColor = false
@@ -1245,15 +1245,15 @@ if true then -- mobile buttons (always enabled)
         lockBtn.MouseButton1Click:Connect(function()
             buttonsLocked = not buttonsLocked
             if buttonsLocked then
-                lockBtn.Text = "ðŸ”’ LOCK"
+                lockBtn.Text = "LOCK"
                 lockBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
                 lockBtn.BackgroundTransparency = 0
                 lockBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
             else
-                lockBtn.Text = "ðŸ”“ UNLOCK"
-                lockBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                lockBtn.BackgroundTransparency = 0.1
-                lockBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+                lockBtn.Text = "UNLOCK"
+                lockBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                lockBtn.BackgroundTransparency = 0
+                lockBtn.TextColor3 = Color3.fromRGB(180, 0, 0)
             end
         end)
         -- touch support
@@ -1261,29 +1261,29 @@ if true then -- mobile buttons (always enabled)
             if inp.UserInputType == Enum.UserInputType.Touch then
                 buttonsLocked = not buttonsLocked
                 if buttonsLocked then
-                    lockBtn.Text = "ðŸ”’ LOCK"
+                    lockBtn.Text = "LOCK"
                     lockBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
                     lockBtn.BackgroundTransparency = 0
                     lockBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
                 else
-                    lockBtn.Text = "ðŸ”“ UNLOCK"
+                    lockBtn.Text = "UNLOCK"
                     lockBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                     lockBtn.BackgroundTransparency = 0.1
-                    lockBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+                    lockBtn.TextColor3 = Color3.fromRGB(180, 0, 0)
                 end
             end
         end)
     end
 
-    print("âœ“ MOBILE BUTTONS: 2 horizontal rows, rectangles, lock button, fixed dragging")
+    print("â€œ MOBILE BUTTONS: 2 horizontal rows, rectangles, lock button, fixed dragging")
 end
 
 
 -- Rest of GUI continues...
 main = Instance.new("Frame")
 main.Name = "Main"
-main.Size = UDim2.new(0, 560, 0, 540)
-main.Position = UDim2.new(0, 20, 0, 20)
+main.Size = UDim2.new(0, 320, 0, 500)
+main.Position = UDim2.new(0, 8, 0, 8)
 main.BackgroundColor3 = C_BG
 main.BorderSizePixel = 0
 main.Active = true
@@ -1294,13 +1294,13 @@ main.Parent = gui
 local deviceType = "Desktop"
 if isMobile then
     deviceType = "Mobile"
-    main.Size = UDim2.new(0, 400, 0, 400)
+    main.Size = UDim2.new(0, 280, 0, 420)
 end
 
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 24)
 
 local mainStroke = Instance.new("UIStroke", main)
-mainStroke.Color = Color3.fromRGB(60, 0, 90)
+mainStroke.Color = Color3.fromRGB(200, 20, 20)
 mainStroke.Thickness = 1.5
 
 -- Dragging (Mouse + Touch)
@@ -1327,45 +1327,30 @@ do
     end)
 end
 
--- Header
-local batEmoji = Instance.new("TextLabel")
-batEmoji.Size = UDim2.new(0, 40, 0, 40)
-batEmoji.Position = UDim2.new(0, 14, 0, 8)
-batEmoji.BackgroundTransparency = 1
-batEmoji.Text = "ðŸ¦‡"
-batEmoji.TextColor3 = C_PURPLE
-batEmoji.Font = Enum.Font.GothamBlack
-batEmoji.TextSize = 32
-batEmoji.ZIndex = 4
-batEmoji.Parent = main
+-- Header: SPADE-HUB logo pill in top-left, no emoji, no subtitle
+local logoBg = Instance.new("Frame")
+logoBg.Size = UDim2.new(0, 130, 0, 36)
+logoBg.Position = UDim2.new(0, 12, 0, 14)
+logoBg.BackgroundColor3 = Color3.fromRGB(200, 20, 20)
+logoBg.BorderSizePixel = 0
+logoBg.ZIndex = 5
+logoBg.Parent = main
+Instance.new("UICorner", logoBg).CornerRadius = UDim.new(0, 18)
 
-local titleLbl = Instance.new("TextLabel")
-titleLbl.Size = UDim2.new(1, 0, 0, 36)
-titleLbl.Position = UDim2.new(0, 0, 0, 12)
-titleLbl.BackgroundTransparency = 1
-titleLbl.Text = "K7 HUB"
-titleLbl.TextColor3 = C_PURPLE
-titleLbl.Font = Enum.Font.GothamBlack
-titleLbl.TextSize = 28
-titleLbl.TextXAlignment = Enum.TextXAlignment.Center
-titleLbl.ZIndex = 4
-titleLbl.Parent = main
-
-local byLbl = Instance.new("TextLabel")
-byLbl.Size = UDim2.new(1, 0, 0, 14)
-byLbl.Position = UDim2.new(0, 0, 0, 50)
-byLbl.BackgroundTransparency = 1
-byLbl.Text = "tyke313"
-byLbl.TextColor3 = C_DIM
-byLbl.Font = Enum.Font.GothamBold
-byLbl.TextSize = 11
-byLbl.TextXAlignment = Enum.TextXAlignment.Center
-byLbl.ZIndex = 4
-byLbl.Parent = main
+local logoTxt = Instance.new("TextLabel")
+logoTxt.Size = UDim2.new(1, 0, 1, 0)
+logoTxt.BackgroundTransparency = 1
+logoTxt.Text = "SPADE-HUB"
+logoTxt.TextColor3 = Color3.fromRGB(255, 255, 255)
+logoTxt.Font = Enum.Font.GothamBlack
+logoTxt.TextSize = 16
+logoTxt.TextXAlignment = Enum.TextXAlignment.Center
+logoTxt.ZIndex = 6
+logoTxt.Parent = logoBg
 
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 28, 0, 28)
-closeBtn.Position = UDim2.new(1, -38, 0, 12)
+closeBtn.Position = UDim2.new(1, -32, 0, 8)
 closeBtn.BackgroundTransparency = 1
 closeBtn.Text = "x"
 closeBtn.TextColor3 = C_DIM
@@ -1390,17 +1375,17 @@ closeBtn.InputBegan:Connect(function(inp)
 end)
 
 local sep = Instance.new("Frame")
-sep.Size = UDim2.new(1, -40, 0, 1)
-sep.Position = UDim2.new(0, 20, 0, 68)
-sep.BackgroundColor3 = Color3.fromRGB(30, 0, 45)
+sep.Size = UDim2.new(1, -24, 0, 1)
+sep.Position = UDim2.new(0, 12, 0, 58)
+sep.BackgroundColor3 = Color3.fromRGB(220, 180, 180)
 sep.BorderSizePixel = 0
 sep.ZIndex = 3
 sep.Parent = main
 
 -- Scrolling Frame
 local scroll = Instance.new("ScrollingFrame")
-scroll.Size = UDim2.new(1, 0, 1, -74)
-scroll.Position = UDim2.new(0, 0, 0, 74)
+scroll.Size = UDim2.new(1, 0, 1, -62)
+scroll.Position = UDim2.new(0, 0, 0, 62)
 scroll.BackgroundTransparency = 1
 scroll.BorderSizePixel = 0
 scroll.ScrollBarThickness = 6
@@ -1560,7 +1545,7 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
         
         local dropInner = Instance.new("Frame")
         dropInner.Size = UDim2.new(1, 0, 1, 0)
-        dropInner.BackgroundColor3 = Color3.fromRGB(10, 0, 16)
+        dropInner.BackgroundColor3 = Color3.fromRGB(245, 235, 235)
         dropInner.BorderSizePixel = 0
         dropInner.ZIndex = 4
         dropInner.Parent = dropPanel
@@ -1601,7 +1586,7 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
         dropInput = Instance.new("TextBox")
         dropInput.Size = UDim2.new(0, 58, 0, 24)
         dropInput.Position = UDim2.new(1, -58, 0, 0)
-        dropInput.BackgroundColor3 = Color3.fromRGB(20, 0, 30)
+        dropInput.BackgroundColor3 = Color3.fromRGB(240, 230, 230)
         dropInput.BorderSizePixel = 0
         dropInput.Text = tostring(Values.STEAL_RADIUS)
         dropInput.TextColor3 = C_PURPLE
@@ -1653,7 +1638,7 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
         local durationInput = Instance.new("TextBox")
         durationInput.Size = UDim2.new(0, 58, 0, 24)
         durationInput.Position = UDim2.new(1, -58, 0, 0)
-        durationInput.BackgroundColor3 = Color3.fromRGB(20, 0, 30)
+        durationInput.BackgroundColor3 = Color3.fromRGB(240, 230, 230)
         durationInput.BorderSizePixel = 0
         durationInput.Text = tostring(Values.STEAL_DURATION)
         durationInput.TextColor3 = C_PURPLE
@@ -1747,10 +1732,13 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
             end
             
             if pressDuration < 0.5 and not longPressTriggered then
-                isOn = not isOn
-                Enabled[enabledKey] = isOn
-                setVisual(isOn)
-                if onToggle then onToggle(isOn) end
+                -- Always read from Enabled table as source of truth so
+                -- external code (e.g. autoLeft completing) stays in sync
+                local current = Enabled[enabledKey] or false
+                local next = not current
+                Enabled[enabledKey] = next
+                setVisual(next)
+                if onToggle then onToggle(next) end
             end
         end
     end
@@ -1787,7 +1775,7 @@ local function makeRow(keybindRefName, labelTxt, enabledKey, order, onToggle)
     clk.MouseEnter:Connect(function()
         playTick()
         TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE2}):Play()
-        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(18, 0, 26)}):Play()
+        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(240, 230, 230)}):Play()
     end)
     clk.MouseLeave:Connect(function()
         TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE}):Play()
@@ -1891,7 +1879,7 @@ local function makeManualRow(keybindRefName, labelTxt, order)
     clk.MouseEnter:Connect(function()
         playTick()
         TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE2}):Play()
-        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(18, 0, 26)}):Play()
+        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(240, 230, 230)}):Play()
     end)
     clk.MouseLeave:Connect(function()
         TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE}):Play()
@@ -1902,7 +1890,7 @@ local function makeManualRow(keybindRefName, labelTxt, order)
         if inp.UserInputType == Enum.UserInputType.Touch then
             playTick()
             TweenService:Create(nameLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE2}):Play()
-            TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(18, 0, 26)}):Play()
+            TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(240, 230, 230)}):Play()
         end
     end)
     
@@ -1917,7 +1905,7 @@ end
 
 local function makeSectionLbl(txt, order)
     local f = Instance.new("Frame")
-    f.Size = UDim2.new(1, 0, 0, 24)
+    f.Size = UDim2.new(1, 0, 0, 22)
     f.BackgroundTransparency = 1
     f.BorderSizePixel = 0
     f.LayoutOrder = order
@@ -1927,7 +1915,7 @@ local function makeSectionLbl(txt, order)
     l.Size = UDim2.new(1, 0, 1, 0)
     l.BackgroundTransparency = 1
     l.Text = txt:upper()
-    l.TextColor3 = Color3.fromRGB(55, 0, 80)
+    l.TextColor3 = Color3.fromRGB(180, 50, 50)
     l.Font = Enum.Font.GothamBold
     l.TextSize = 10
     l.TextXAlignment = Enum.TextXAlignment.Left
@@ -2051,7 +2039,7 @@ local function makeInputBox(parent, lbl, defaultTxt, onDone)
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(0, 70, 0, 26)
     box.Position = UDim2.new(1, -80, 0.5, -13)
-    box.BackgroundColor3 = Color3.fromRGB(14, 0, 22)
+    box.BackgroundColor3 = Color3.fromRGB(240, 230, 230)
     box.BorderSizePixel = 0
     box.Text = defaultTxt
     box.TextColor3 = C_PURPLE
@@ -2122,7 +2110,7 @@ local function makeSlider(parent, lbl, minVal, maxVal, defaultVal, onChanged)
     local trackBg = Instance.new("Frame")
     trackBg.Size = UDim2.new(0, 200, 0, 6)
     trackBg.Position = UDim2.new(0.38, 0, 0.5, -3)
-    trackBg.BackgroundColor3 = Color3.fromRGB(14, 0, 22)
+    trackBg.BackgroundColor3 = Color3.fromRGB(240, 230, 230)
     trackBg.BorderSizePixel = 0
     trackBg.ZIndex = 4
     trackBg.Parent = wrap
@@ -2284,7 +2272,7 @@ local function makeKeybindRow(parent, lbl, keybindRefName, onChanged)
     local kbBtn = Instance.new("TextButton")
     kbBtn.Size = UDim2.new(0, 70, 0, 26)
     kbBtn.Position = UDim2.new(1, -80, 0.5, -13)
-    kbBtn.BackgroundColor3 = Color3.fromRGB(14, 0, 22)
+    kbBtn.BackgroundColor3 = Color3.fromRGB(240, 230, 230)
     kbBtn.BorderSizePixel = 0
     kbBtn.Text = Keybinds[keybindRefName].Name
     kbBtn.TextColor3 = C_PURPLE
@@ -2463,7 +2451,7 @@ do
     fClk.MouseEnter:Connect(function()
         playTick()
         TweenService:Create(floatLbl, TweenInfo.new(0.1), {TextColor3 = C_PURPLE2}):Play()
-        TweenService:Create(floatRow, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(18, 0, 26)}):Play()
+        TweenService:Create(floatRow, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(240, 230, 230)}):Play()
     end)
     fClk.MouseLeave:Connect(function()
         if not floatEnabled then
@@ -2556,14 +2544,14 @@ end)
 local progressBar = Instance.new("Frame", gui)
 progressBar.Size = UDim2.new(0, 460, 0, 72)
 progressBar.Position = UDim2.new(0.5, -230, 1, -90)
-progressBar.BackgroundColor3 = C_BG
+progressBar.BackgroundColor3 = Color3.fromRGB(255,255,255)
 progressBar.BorderSizePixel = 0
 progressBar.Active = true
 
 Instance.new("UICorner", progressBar).CornerRadius = UDim.new(0, 20)
 
 local pbStroke = Instance.new("UIStroke", progressBar)
-pbStroke.Color = Color3.fromRGB(40, 0, 60)
+pbStroke.Color = Color3.fromRGB(200, 20, 20)
 pbStroke.Thickness = 1.5
 
 if deviceType == "Mobile" then
@@ -2630,10 +2618,10 @@ radLbl.ZIndex = 3
 RadiusInput = Instance.new("TextBox", progressBar)
 RadiusInput.Size = UDim2.new(0, 48, 0, 20)
 RadiusInput.Position = UDim2.new(0, 68, 0, 32)
-RadiusInput.BackgroundColor3 = Color3.fromRGB(14, 0, 20)
+RadiusInput.BackgroundColor3 = Color3.fromRGB(240, 230, 230)
 RadiusInput.BorderSizePixel = 0
 RadiusInput.Text = tostring(Values.STEAL_RADIUS)
-RadiusInput.TextColor3 = C_PURPLE
+RadiusInput.TextColor3 = Color3.fromRGB(200, 20, 20)
 RadiusInput.Font = Enum.Font.GothamBold
 RadiusInput.TextSize = 12
 RadiusInput.ZIndex = 4
@@ -2655,7 +2643,7 @@ end)
 local pTrack = Instance.new("Frame", progressBar)
 pTrack.Size = UDim2.new(1, -20, 0, 8)
 pTrack.Position = UDim2.new(0, 10, 1, -16)
-pTrack.BackgroundColor3 = Color3.fromRGB(14, 0, 20)
+pTrack.BackgroundColor3 = Color3.fromRGB(220, 200, 200)
 pTrack.BorderSizePixel = 0
 pTrack.ZIndex = 2
 
@@ -2668,6 +2656,97 @@ ProgressBarFill.BorderSizePixel = 0
 ProgressBarFill.ZIndex = 3
 
 Instance.new("UICorner", ProgressBarFill).CornerRadius = UDim.new(1, 0)
+
+
+-- Ã¢â€â‚¬Ã¢â€â‚¬ GROUND TP Ã¢â€â‚¬Ã¢â€â‚¬
+-- Floating draggable "Drop Down" button, shown always (no toggle needed in menu)
+local groundTPFloat = Instance.new("TextButton")
+groundTPFloat.Size = UDim2.new(0, 120, 0, 38)
+groundTPFloat.Position = UDim2.new(0.5, -60, 1, -110)
+groundTPFloat.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+groundTPFloat.BorderSizePixel = 0
+groundTPFloat.Text = "Tp Down"
+groundTPFloat.TextColor3 = Color3.fromRGB(200, 20, 20)
+groundTPFloat.Font = Enum.Font.GothamBold
+groundTPFloat.TextSize = 13
+groundTPFloat.AutoButtonColor = false
+groundTPFloat.ZIndex = 9000
+groundTPFloat.Parent = gui
+
+Instance.new("UICorner", groundTPFloat).CornerRadius = UDim.new(0, 12)
+local gtpStroke = Instance.new("UIStroke", groundTPFloat)
+gtpStroke.Color = Color3.fromRGB(200, 20, 20)
+gtpStroke.Thickness = 2
+
+-- Draggable
+do
+    local drag, ds, sp = false, nil, nil
+    groundTPFloat.InputBegan:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+            drag = true; ds = inp.Position; sp = groundTPFloat.Position
+        end
+    end)
+    groundTPFloat.InputChanged:Connect(function(inp)
+        if not drag then return end
+        if inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch then
+            local d = inp.Position - ds
+            groundTPFloat.Position = UDim2.new(sp.X.Scale, sp.X.Offset+d.X, sp.Y.Scale, sp.Y.Offset+d.Y)
+        end
+    end)
+    groundTPFloat.InputEnded:Connect(function(inp)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
+            drag = false
+        end
+    end)
+end
+
+local function findGroundBelow(originPos, char)
+    local params = RaycastParams.new()
+    params.FilterDescendantsInstances = {char}
+    params.FilterType = Enum.RaycastFilterType.Exclude
+    local down = Vector3.new(0, -5000, 0)
+    local res = workspace:Raycast(originPos, down, params)
+    if res then return res.Position.Y end
+    for _, off in ipairs({
+        Vector3.new(1.5,0,0), Vector3.new(-1.5,0,0),
+        Vector3.new(0,0,1.5), Vector3.new(0,0,-1.5),
+        Vector3.new(3,0,0),   Vector3.new(-3,0,0),
+    }) do
+        res = workspace:Raycast(originPos + off, down, params)
+        if res then return res.Position.Y end
+    end
+    res = workspace:Raycast(originPos + Vector3.new(0,10,0), down, params)
+    if res then return res.Position.Y end
+    return nil
+end
+
+groundTPFloat.MouseButton1Click:Connect(function()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local rp = char:FindFirstChild("HumanoidRootPart")
+    if not rp then return end
+    local groundY = findGroundBelow(rp.Position, char)
+    if not groundY then
+        TweenService:Create(groundTPFloat, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(255,220,220)}):Play()
+        task.delay(0.4, function() TweenService:Create(groundTPFloat, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255,255,255)}):Play() end)
+        return
+    end
+    if rp.Position.Y - groundY < 3 then
+        TweenService:Create(groundTPFloat, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(230,230,230)}):Play()
+        task.delay(0.35, function() TweenService:Create(groundTPFloat, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255,255,255)}):Play() end)
+        return
+    end
+    rp.CFrame = CFrame.new(rp.Position.X, groundY + 3, rp.Position.Z) * (rp.CFrame - rp.CFrame.Position)
+    rp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    TweenService:Create(groundTPFloat, TweenInfo.new(0.08), {BackgroundColor3 = Color3.fromRGB(200,20,20)}):Play()
+    task.delay(0.3, function() TweenService:Create(groundTPFloat, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(255,255,255)}):Play() end)
+end)
+
+groundTPFloat.InputBegan:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.Touch then
+        groundTPFloat.MouseButton1Click:Fire()
+    end
+end)
 
 -- Input Handler
 UserInputService.InputBegan:Connect(function(input, gpe)
@@ -2833,7 +2912,7 @@ local function setupChar(char)
         speedLbl = Instance.new("TextLabel", bb)
         speedLbl.Size = UDim2.new(1, 0, 1, 0)
         speedLbl.BackgroundTransparency = 1
-        speedLbl.TextColor3 = C_PURPLE
+        speedLbl.TextColor3 = Color3.fromRGB(200, 20, 20)
         speedLbl.Font = Enum.Font.GothamBold
         speedLbl.TextScaled = true
         speedLbl.TextStrokeTransparency = 0
@@ -2846,8 +2925,8 @@ end
 LocalPlayer.CharacterAdded:Connect(setupChar)
 if LocalPlayer.Character then setupChar(LocalPlayer.Character) end
 
-print("SPADE HUB v4 - Loaded!")
-print("âœ“ Mobile: 2 horizontal rows of rectangle buttons + LOCK button")
-print("âœ“ Inf jump fixed for mobile (re-jumps on land)")
-print("âœ“ A.LEFT/A.RIGHT auto-reset button when movement completes")
-print("âœ“ Drag uses btn.InputChanged - joystick no longer moves buttons")
+print("SPADE-HUB - Loaded!")
+print("â€œ Mobile: 2 horizontal rows of rectangle buttons + LOCK button")
+print("â€œ Inf jump fixed for mobile (re-jumps on land)")
+print("â€œ A.LEFT/A.RIGHT auto-reset button when movement completes")
+print("â€œ Drag uses btn.InputChanged - joystick no longer moves buttons")
