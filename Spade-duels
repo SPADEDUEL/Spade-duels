@@ -1,5 +1,4 @@
-print("[SPADE] reached line 0")
--- SPADE DUELS  Ã¢â‚¬â€œ  Full Script
+-- SPADE DUELS    Full Script
 -- Place as a LocalScript inside StarterPlayerScripts
 
 local Lib = Instance.new("ScreenGui")
@@ -99,7 +98,6 @@ local jumpBoostActive = false; local jumpBoostConn   = nil
 local infJumpActive   = false; local infJumpConn     = nil
 
 local stealSpeedActive = false; local stealSpeedConn  = nil
-print("[SPADE] reached line 100")
 local carrySpeedToggleActive = false; local carrySpeedToggleConn = nil
 local lastHitTime = 0   -- tracks when we last took a hit for grace period
 local HIT_GRACE = 3     -- seconds player can still move after getting hit
@@ -200,7 +198,6 @@ local function isRagdolled(char)
     local rv=char:FindFirstChild("Ragdoll") or char:FindFirstChild("IsRagdoll")
     if rv and rv:IsA("BoolValue") and rv.Value then return true end
     return false
-print("[SPADE] reached line 200")
 end
 
 -- First tool in inventory (for counter hit)
@@ -228,7 +225,7 @@ end
 -- ============================================================
 
 -- Jump Boost
--- Jump Boost Ã¢â‚¬â€ hooks JumpRequest so it only fires on actual jump press
+-- Jump Boost  hooks JumpRequest so it only fires on actual jump press
 -- Setting JumpPower in Heartbeat every frame causes the game to think
 -- the character re-jumped, dropping held items. We only apply it once per press.
 local function startJumpBoost()
@@ -250,7 +247,7 @@ local function stopJumpBoost()
     if hum then hum.UseJumpPower = true; hum.JumpPower = 50 end
 end
 
--- Infinite Jump Ã¢â‚¬â€ uses velocity kick, NOT ChangeState (avoids reset)
+-- Infinite Jump  uses velocity kick, NOT ChangeState (avoids reset)
 local function startInfJump()
     if infJumpConn then infJumpConn:Disconnect() end
     infJumpConn=UIS.JumpRequest:Connect(function()
@@ -262,7 +259,7 @@ local function startInfJump()
         -- Only jump again if airborne (not grounded)
         local onGround=hum.FloorMaterial~=Enum.Material.Air
         if not onGround then
-            -- Kick upward using velocity Ã¢â‚¬â€ safe, no state change
+            -- Kick upward using velocity  safe, no state change
             hrp.AssemblyLinearVelocity=Vector3.new(
                 hrp.AssemblyLinearVelocity.X,
                 math.max(hrp.AssemblyLinearVelocity.Y, 50),
@@ -301,7 +298,6 @@ local function stopSpinBot()
 end
 
 -- Steal Speed
-print("[SPADE] reached line 300")
 local function startStealSpeed()
     if stealSpeedConn then stealSpeedConn:Disconnect() end
     stealSpeedConn=RunService.Heartbeat:Connect(function()
@@ -402,7 +398,6 @@ local function stopUnwalk()
         savedAnimations.Animate:Clone().Parent = c
         savedAnimations.Animate = nil
     end
-print("[SPADE] reached line 400")
 end
 
 -- Anti Fling
@@ -503,7 +498,6 @@ local function startWalkFling()
             local vel=root.Velocity; root.Velocity=vel*10000+Vector3.new(0,10000,0)
             RunService.RenderStepped:Wait(); if root and root.Parent then root.Velocity=vel end
             RunService.Stepped:Wait(); if root and root.Parent then root.Velocity=vel+Vector3.new(0,0.1,0) end
-print("[SPADE] reached line 500")
         end
     end)
     coroutine.resume(co); table.insert(_wfConns,co)
@@ -604,7 +598,6 @@ local function doCounterHit()
             task.wait(0.1)
         end
         task.wait(0.05)
-print("[SPADE] reached line 600")
         local cf=player.Character; if cf then local hf=cf:FindFirstChild("HumanoidRootPart"); if hf then hf.AssemblyLinearVelocity=Vector3.new(0,hf.AssemblyLinearVelocity.Y,0) end end
         task.wait(0.7); counterCooldown=false
     end)
@@ -705,7 +698,6 @@ local function MakeDraggable(frame)
     end)
 end
 
-print("[SPADE] reached line 700")
 local function ApplyStyle(obj)
     obj.BackgroundColor3=C_PANEL; obj.BackgroundTransparency=0
     Instance.new("UICorner",obj).CornerRadius=UDim.new(0,12)
@@ -737,7 +729,7 @@ local function MakeMainBtnV2(labelText,xScale,xOff,yScale,yOff,w,h)
     local lbl=Instance.new("TextLabel",b); lbl.Name="Label"; lbl.Size=UDim2.new(1,-34,1,0); lbl.Position=UDim2.new(0,22,0,0)
     lbl.BackgroundTransparency=1; lbl.Text=labelText; lbl.TextColor3=C_TEXT; lbl.Font=Enum.Font.Gotham; lbl.TextSize=12; lbl.TextXAlignment=Enum.TextXAlignment.Left
     local gear=Instance.new("TextLabel",b); gear.Size=UDim2.new(0,16,0,16); gear.Position=UDim2.new(1,-20,0.5,-8)
-    gear.BackgroundTransparency=1; gear.Text="Ã¢Å¡â„¢"; gear.TextColor3=C_SUBTEXT; gear.Font=Enum.Font.Gotham; gear.TextSize=13
+    gear.BackgroundTransparency=1; gear.Text="*"; gear.TextColor3=C_SUBTEXT; gear.Font=Enum.Font.Gotham; gear.TextSize=13
     return b
 end
 
@@ -761,9 +753,9 @@ ApplyStyle(groundTPFloat); MakeDraggable(groundTPFloat)
 local gtpDot=Instance.new("Frame",groundTPFloat); gtpDot.Name="StatusDot"; gtpDot.Size=UDim2.new(0,7,0,7); gtpDot.Position=UDim2.new(0,8,0.5,-3)
 gtpDot.BackgroundColor3=C_DOT_ON; gtpDot.BorderSizePixel=0; Instance.new("UICorner",gtpDot).CornerRadius=UDim.new(1,0)
 local gtpLabel=Instance.new("TextLabel",groundTPFloat); gtpLabel.Name="Label"; gtpLabel.Size=UDim2.new(1,-34,1,0); gtpLabel.Position=UDim2.new(0,22,0,0)
-gtpLabel.BackgroundTransparency=1; gtpLabel.Text="Ã¢â€ â€œ Drop Down"; gtpLabel.TextColor3=C_TEXT; gtpLabel.Font=Enum.Font.Gotham; gtpLabel.TextSize=12; gtpLabel.TextXAlignment=Enum.TextXAlignment.Left
+gtpLabel.BackgroundTransparency=1; gtpLabel.Text=" Drop Down"; gtpLabel.TextColor3=C_TEXT; gtpLabel.Font=Enum.Font.Gotham; gtpLabel.TextSize=12; gtpLabel.TextXAlignment=Enum.TextXAlignment.Left
 local gtpArrow=Instance.new("TextLabel",groundTPFloat); gtpArrow.Size=UDim2.new(0,16,0,16); gtpArrow.Position=UDim2.new(1,-20,0.5,-8)
-gtpArrow.BackgroundTransparency=1; gtpArrow.Text="Ã¢Â¬â€¡"; gtpArrow.TextColor3=C_SUBTEXT; gtpArrow.Font=Enum.Font.Gotham; gtpArrow.TextSize=13
+gtpArrow.BackgroundTransparency=1; gtpArrow.Text="v"; gtpArrow.TextColor3=C_SUBTEXT; gtpArrow.Font=Enum.Font.Gotham; gtpArrow.TextSize=13
 
 groundTPFloat.MouseButton1Click:Connect(function()
     local char=player.Character or player.CharacterAdded:Wait()
@@ -806,7 +798,6 @@ stopMovement=function(rb,lb)
 end
 
 -- Steal bar
-print("[SPADE] reached line 800")
 local SB_W,SB_H=280,38
 local StealBar=Instance.new("Frame",Lib); StealBar.Size=UDim2.new(0,SB_W,0,SB_H); StealBar.Position=UDim2.new(0.5,-SB_W/2,1,-(SB_H+8))
 StealBar.BackgroundColor3=C_PANEL; StealBar.BackgroundTransparency=0; Instance.new("UICorner",StealBar).CornerRadius=UDim.new(0,12)
@@ -890,7 +881,7 @@ local function makeSettingsItem(name,parent)
 end
 
 local function makeDivider(text,parent)
-    -- Category header bar Ã¢â‚¬â€ bold white text on a solid red background
+    -- Category header bar  bold white text on a solid red background
     local wrap = Instance.new("Frame",parent)
     wrap.Size = UDim2.new(1,0,0,24)
     wrap.BackgroundColor3 = C_ACTIVE
@@ -907,7 +898,6 @@ local function makeDivider(text,parent)
     return wrap
 end
 
-print("[SPADE] reached line 900")
 local slidingTarget=nil
 local function makeSlider(parent,labelText,minVal,maxVal,defaultVal,isFloat,onChanged)
     local container=Instance.new("Frame",parent); container.Size=UDim2.new(1,0,0,52)
@@ -1007,8 +997,7 @@ end
 -- BUILD SETTINGS CONTENT  (divider ABOVE its items each time)
 -- ============================================================
 
--- Ã¢â€â‚¬Ã¢â€â‚¬ FEATURES Ã¢â€â‚¬Ã¢â€â‚¬
-print("[SPADE] reached line 1000")
+--  FEATURES 
 makeDivider("FEATURES",SContainer)
 do
     local featureItems={"Anti Fling","Spin Bot","Anti Ragdoll","Auto Steal","Steal Speed","Unwalk"}
@@ -1028,23 +1017,23 @@ end
 local groundTPItem=makeSettingsItem("Ground TP",SContainer)
 registerToggle("Ground TP",groundTPItem, function() groundTPEnabled=true; groundTPFloat.Visible=true end, function() groundTPEnabled=false; groundTPFloat.Visible=false end)
 
-local counterItem=makeSettingsItem("Ã¢Å¡Â¡ Counter Hit",SContainer)
+local counterItem=makeSettingsItem("! Counter Hit",SContainer)
 registerToggle("Counter Hit",counterItem, function() counterHitActive=true; startCounterHit() end, function() stopCounterHit() end)
 
-local carrySpeedItem=makeSettingsItem("Ã°Å¸ÂÂ¢ Carry Speed Mode",SContainer)
+local carrySpeedItem=makeSettingsItem(" Carry Speed Mode",SContainer)
 registerToggle("Carry Speed Mode",carrySpeedItem,
     function() carrySpeedToggleActive=true; startCarrySpeedToggle() end,
     function() carrySpeedToggleActive=false; stopCarrySpeedToggle() end)
 
-local showWPItem=makeSettingsItem("Ã°Å¸â€˜Â Show Waypoints",SContainer)
+local showWPItem=makeSettingsItem(" Show Waypoints",SContainer)
 registerToggle("Show Waypoints",showWPItem, function() showWaypointsEnabled=true; showAllMarkers() end, function() showWaypointsEnabled=false; hideAllMarkers() end)
 
--- Ã¢â€â‚¬Ã¢â€â‚¬ SPEED BOOST Ã¢â€â‚¬Ã¢â€â‚¬
+--  SPEED BOOST 
 makeDivider("SPEED BOOST",SContainer)
-local _,normalSGV,normalSSV=makeSlider(SContainer,"Ã¢Å¡Â¡ Normal Speed",10,150,NORMAL_SPEED,false,function(v) NORMAL_SPEED=v end)
-local _,carrySGV,carrySSV   =makeSlider(SContainer,"Ã°Å¸Å½â€™ Carry Speed", 5, 80,CARRY_SPEED, false,function(v) CARRY_SPEED=v end)
+local _,normalSGV,normalSSV=makeSlider(SContainer,"! Normal Speed",10,150,NORMAL_SPEED,false,function(v) NORMAL_SPEED=v end)
+local _,carrySGV,carrySSV   =makeSlider(SContainer," Carry Speed", 5, 80,CARRY_SPEED, false,function(v) CARRY_SPEED=v end)
 
--- Ã¢â€â‚¬Ã¢â€â‚¬ JUMP BOOST Ã¢â€â‚¬Ã¢â€â‚¬
+--  JUMP BOOST 
 makeDivider("JUMP BOOST",SContainer)
 do
     local jbItem=makeSettingsItem("Jump Boost",SContainer)
@@ -1052,28 +1041,28 @@ do
     local ijItem=makeSettingsItem("Infinite Jump",SContainer)
     registerToggle("Infinite Jump",ijItem, function() infJumpActive=true; startInfJump() end, function() infJumpActive=false; stopInfJump() end)
 end
-local _,jumpSGV,jumpSSV=makeSlider(SContainer,"Ã°Å¸â€Â¼ Jump Power",10,500,JUMP_POWER_VALUE,false,function(v) JUMP_POWER_VALUE=v end)
+local _,jumpSGV,jumpSSV=makeSlider(SContainer," Jump Power",10,500,JUMP_POWER_VALUE,false,function(v) JUMP_POWER_VALUE=v end)
 
--- Ã¢â€â‚¬Ã¢â€â‚¬ STEAL Ã¢â€â‚¬Ã¢â€â‚¬
+--  STEAL 
 makeDivider("STEAL",SContainer)
-local _,stealRadGV,stealRadSV=makeSlider(SContainer,"Ã°Å¸â€œÂ¡ Steal Radius",  3,  50,STEAL_RADIUS,false,function(v) STEAL_RADIUS=v end)
-local _,stealSpdGV,stealSpdSV=makeSlider(SContainer,"Ã¢ÂÂ± Steal Interval",0.1,2.0,STEAL_SPD,   true, function(v) STEAL_SPD=v end)
+local _,stealRadGV,stealRadSV=makeSlider(SContainer," Steal Radius",  3,  50,STEAL_RADIUS,false,function(v) STEAL_RADIUS=v end)
+local _,stealSpdGV,stealSpdSV=makeSlider(SContainer," Steal Interval",0.1,2.0,STEAL_SPD,   true, function(v) STEAL_SPD=v end)
 
--- Ã¢â€â‚¬Ã¢â€â‚¬ WAYPOINTS Ã¢â€â‚¬Ã¢â€â‚¬
+--  WAYPOINTS 
 makeDivider("RIGHT WAYPOINTS",SContainer)
 for i,data in ipairs(rightWaypointData) do makeWaypointEditor(SContainer,"right",i,data) end
 makeDivider("LEFT WAYPOINTS",SContainer)
 for i,data in ipairs(leftWaypointData)  do makeWaypointEditor(SContainer,"left",i,data)  end
 
--- Ã¢â€â‚¬Ã¢â€â‚¬ GUI Ã¢â€â‚¬Ã¢â€â‚¬
+--  GUI 
 makeDivider("GUI",SContainer)
-local lockItem=makeSettingsItem("Ã°Å¸â€â€œ Lock GUI",SContainer)
+local lockItem=makeSettingsItem(" Lock GUI",SContainer)
 local lockDot=lockItem:FindFirstChild("StatusDot"); local lockLabel=lockItem:FindFirstChild("Label")
 lockItem.MouseButton1Click:Connect(function()
     guiLocked=not guiLocked
     lockItem.BackgroundColor3=guiLocked and Color3.fromRGB(255,248,220) or Color3.fromRGB(248,248,248)
     lockDot.BackgroundColor3=guiLocked and C_LOCK or C_DOT_OFF
-    lockLabel.Text=guiLocked and "Ã°Å¸â€â€™ Locked" or "Ã°Å¸â€â€œ Lock GUI"
+    lockLabel.Text=guiLocked and " Locked" or " Lock GUI"
     for _,f in ipairs(allDraggableFrames) do local stroke=f:FindFirstChildWhichIsA("UIStroke"); if stroke then stroke.Color=guiLocked and C_LOCK or C_BORDER end end
 end)
 
@@ -1081,7 +1070,7 @@ end)
 local bottomArea=Instance.new("Frame",SettingsPanel); bottomArea.Size=UDim2.new(1,-14,0,72); bottomArea.Position=UDim2.new(0,7,1,-78); bottomArea.BackgroundTransparency=1
 
 local SaveBtn=Instance.new("TextButton",bottomArea); SaveBtn.Size=UDim2.new(1,0,0,32); SaveBtn.Position=UDim2.new(0,0,0,0)
-SaveBtn.Text="Ã°Å¸â€™Â¾  SAVE CONFIG"; SaveBtn.TextColor3=Color3.fromRGB(255,255,255); SaveBtn.Font=Enum.Font.GothamBold; SaveBtn.TextSize=12; SaveBtn.AutoButtonColor=false
+SaveBtn.Text="  SAVE CONFIG"; SaveBtn.TextColor3=Color3.fromRGB(255,255,255); SaveBtn.Font=Enum.Font.GothamBold; SaveBtn.TextSize=12; SaveBtn.AutoButtonColor=false
 SaveBtn.BackgroundColor3=C_SAVE; SaveBtn.BackgroundTransparency=0; Instance.new("UICorner",SaveBtn).CornerRadius=UDim.new(0,12); Instance.new("UIStroke",SaveBtn).Color=Color3.fromRGB(0,180,80)
 
 local ResetBtn=Instance.new("TextButton",bottomArea); ResetBtn.Size=UDim2.new(1,0,0,26); ResetBtn.Position=UDim2.new(0,0,0,36)
@@ -1109,16 +1098,15 @@ local function du(t) return UDim2.new(t.xS,t.xO,t.yS,t.yO) end
 local function doSaveConfig()
     local data={toggles={},positions={},speeds={},waypoints={}}
     for name,reg in pairs(settingsRegistry) do data.toggles[name]=reg.getState() end
-print("[SPADE] reached line 1100")
     data.toggles["GroundTPVisible"]=groundTPFloat.Visible
     for name,frame in pairs(positionFrames) do data.positions[name]=su(frame.Position) end
     data.speeds={normalSpeed=normalSGV(),carrySpeed=carrySGV(),jumpPower=jumpSGV(),stealRadius=stealRadGV(),stealInterval=stealSpdGV()}
     data.waypoints={right=rightWaypointData,left=leftWaypointData}
     local ok=pcall(writefile,CONFIG_FILE,HttpService:JSONEncode(data))
     if ok then
-        TweenService:Create(SaveBtn,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(0,200,80)}):Play(); SaveBtn.Text="Ã¢Å“â€  SAVED!"
-        task.delay(1.2,function() TweenService:Create(SaveBtn,TweenInfo.new(0.2),{BackgroundColor3=C_SAVE}):Play(); SaveBtn.Text="Ã°Å¸â€™Â¾  SAVE CONFIG" end)
-    else SaveBtn.Text="Ã¢Å“Ëœ  FAILED"; task.delay(1.5,function() SaveBtn.Text="Ã°Å¸â€™Â¾  SAVE CONFIG" end) end
+        TweenService:Create(SaveBtn,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(0,200,80)}):Play(); SaveBtn.Text="  SAVED!"
+        task.delay(1.2,function() TweenService:Create(SaveBtn,TweenInfo.new(0.2),{BackgroundColor3=C_SAVE}):Play(); SaveBtn.Text="  SAVE CONFIG" end)
+    else SaveBtn.Text="X  FAILED"; task.delay(1.5,function() SaveBtn.Text="  SAVE CONFIG" end) end
 end
 
 local function doLoadConfig()
@@ -1210,7 +1198,6 @@ buttons["autoleft"].MouseButton1Click:Connect(function()
             waitingForCountdownLeft=true
             buttons["autoleft"]:FindFirstChild("Label").Text="Waiting..."
             buttons["autoleft"]:FindFirstChild("StatusDot").BackgroundColor3=Color3.fromRGB(200,160,0)
-print("[SPADE] reached line 1200")
         else startMovement("left",buttons["autoleft"]) end
     end
 end)
@@ -1311,7 +1298,6 @@ task.defer(function()
         local hum = char:WaitForChild("Humanoid", 5)
         if hum then
             task.wait(0.1)   -- tiny wait for character to settle
-print("[SPADE] reached line 1300")
             if not carrySpeedToggleActive then
                 hum.WalkSpeed = NORMAL_SPEED
             end
