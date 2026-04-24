@@ -1,21 +1,18 @@
-local ok, err = pcall(function()
+print("[SPADE] reached line 0")
 -- SPADE DUELS  Ã¢â‚¬â€œ  Full Script
 -- Place as a LocalScript inside StarterPlayerScripts
 
 local Lib = Instance.new("ScreenGui")
-Lib.Name = "SpadeHubGui"
-Lib.ResetOnSpawn = false
-Lib.DisplayOrder = 9999
-pcall(function() Lib.Parent = game:GetService("CoreGui") end)
-if not Lib.Parent or not Lib.Parent:IsA("CoreGui") then
-    Lib.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-end
 local UIS = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local player = Players.LocalPlayer
+
+Lib.Name = "SPADEHUB_MINIMAL"
+Lib.ResetOnSpawn = false
+Lib.Parent = game:GetService("CoreGui")
 Lib.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 local CONFIG_FILE = "spade_config.json"
@@ -102,6 +99,7 @@ local jumpBoostActive = false; local jumpBoostConn   = nil
 local infJumpActive   = false; local infJumpConn     = nil
 
 local stealSpeedActive = false; local stealSpeedConn  = nil
+print("[SPADE] reached line 100")
 local carrySpeedToggleActive = false; local carrySpeedToggleConn = nil
 local lastHitTime = 0   -- tracks when we last took a hit for grace period
 local HIT_GRACE = 3     -- seconds player can still move after getting hit
@@ -109,7 +107,6 @@ local STEAL_SPEED_VALUE = 29
 
 local antiRagdollActive = false; local antiRagdollConn = nil
 local unwalkActive      = false; local unwalkConn      = nil
-local savedAnimations   = {}
 local antiFlingActive   = false; local antiFlingConn   = nil
 
 local stealActive       = false
@@ -203,6 +200,7 @@ local function isRagdolled(char)
     local rv=char:FindFirstChild("Ragdoll") or char:FindFirstChild("IsRagdoll")
     if rv and rv:IsA("BoolValue") and rv.Value then return true end
     return false
+print("[SPADE] reached line 200")
 end
 
 -- First tool in inventory (for counter hit)
@@ -303,6 +301,7 @@ local function stopSpinBot()
 end
 
 -- Steal Speed
+print("[SPADE] reached line 300")
 local function startStealSpeed()
     if stealSpeedConn then stealSpeedConn:Disconnect() end
     stealSpeedConn=RunService.Heartbeat:Connect(function()
@@ -382,7 +381,9 @@ local function stopAntiRagdoll()
     if antiRagdollConn then antiRagdollConn:Disconnect(); antiRagdollConn = nil end
 end
 end
+
 -- Unwalk
+local savedAnimations = {}
 local function startUnwalk()
     local c = player.Character; if not c then return end
     local hum = c:FindFirstChildOfClass("Humanoid")
@@ -397,10 +398,11 @@ local function startUnwalk()
 end
 local function stopUnwalk()
     local c = player.Character
-    if c and savedAnimations and savedAnimations.Animate then
+    if c and savedAnimations.Animate then
         savedAnimations.Animate:Clone().Parent = c
         savedAnimations.Animate = nil
     end
+print("[SPADE] reached line 400")
 end
 
 -- Anti Fling
@@ -501,6 +503,7 @@ local function startWalkFling()
             local vel=root.Velocity; root.Velocity=vel*10000+Vector3.new(0,10000,0)
             RunService.RenderStepped:Wait(); if root and root.Parent then root.Velocity=vel end
             RunService.Stepped:Wait(); if root and root.Parent then root.Velocity=vel+Vector3.new(0,0.1,0) end
+print("[SPADE] reached line 500")
         end
     end)
     coroutine.resume(co); table.insert(_wfConns,co)
@@ -532,12 +535,10 @@ end
 local function startBatAimbot()
     if batAimbotConn then return end
     batAimbotConn = RunService.Heartbeat:Connect(function()
-        if not batAimbotActive then return end
         local c = player.Character; if not c then return end
         local h = c:FindFirstChild("HumanoidRootPart"); if not h then return end
         local target, dist = findNearestEnemy(h)
         if not target then return end
-        -- Fly to front of target (K7 method)
         local forward  = target.CFrame.LookVector
         local frontPos = target.Position + forward * 1.5
         local direction = (frontPos - h.Position).Unit
@@ -546,7 +547,6 @@ local function startBatAimbot()
             direction.Y * BatAimbotSpeed,
             direction.Z * BatAimbotSpeed
         )
-        -- Hit when close
         if dist <= 5 then
             local tool = c:FindFirstChildOfClass("Tool")
             if tool then
@@ -565,6 +565,7 @@ local function stopBatAimbot()
         if hum then hum.AutoRotate = true end
     end
 end
+
 -- Counter Hit (ragdoll-based, first item only, no aimbot)
 local function doCounterHit()
     if counterCooldown then return end; counterCooldown=true
@@ -603,6 +604,7 @@ local function doCounterHit()
             task.wait(0.1)
         end
         task.wait(0.05)
+print("[SPADE] reached line 600")
         local cf=player.Character; if cf then local hf=cf:FindFirstChild("HumanoidRootPart"); if hf then hf.AssemblyLinearVelocity=Vector3.new(0,hf.AssemblyLinearVelocity.Y,0) end end
         task.wait(0.7); counterCooldown=false
     end)
@@ -703,6 +705,7 @@ local function MakeDraggable(frame)
     end)
 end
 
+print("[SPADE] reached line 700")
 local function ApplyStyle(obj)
     obj.BackgroundColor3=C_PANEL; obj.BackgroundTransparency=0
     Instance.new("UICorner",obj).CornerRadius=UDim.new(0,12)
@@ -803,6 +806,7 @@ stopMovement=function(rb,lb)
 end
 
 -- Steal bar
+print("[SPADE] reached line 800")
 local SB_W,SB_H=280,38
 local StealBar=Instance.new("Frame",Lib); StealBar.Size=UDim2.new(0,SB_W,0,SB_H); StealBar.Position=UDim2.new(0.5,-SB_W/2,1,-(SB_H+8))
 StealBar.BackgroundColor3=C_PANEL; StealBar.BackgroundTransparency=0; Instance.new("UICorner",StealBar).CornerRadius=UDim.new(0,12)
@@ -903,6 +907,7 @@ local function makeDivider(text,parent)
     return wrap
 end
 
+print("[SPADE] reached line 900")
 local slidingTarget=nil
 local function makeSlider(parent,labelText,minVal,maxVal,defaultVal,isFloat,onChanged)
     local container=Instance.new("Frame",parent); container.Size=UDim2.new(1,0,0,52)
@@ -1003,6 +1008,7 @@ end
 -- ============================================================
 
 -- Ã¢â€â‚¬Ã¢â€â‚¬ FEATURES Ã¢â€â‚¬Ã¢â€â‚¬
+print("[SPADE] reached line 1000")
 makeDivider("FEATURES",SContainer)
 do
     local featureItems={"Anti Fling","Spin Bot","Anti Ragdoll","Auto Steal","Steal Speed","Unwalk"}
@@ -1103,6 +1109,7 @@ local function du(t) return UDim2.new(t.xS,t.xO,t.yS,t.yO) end
 local function doSaveConfig()
     local data={toggles={},positions={},speeds={},waypoints={}}
     for name,reg in pairs(settingsRegistry) do data.toggles[name]=reg.getState() end
+print("[SPADE] reached line 1100")
     data.toggles["GroundTPVisible"]=groundTPFloat.Visible
     for name,frame in pairs(positionFrames) do data.positions[name]=su(frame.Position) end
     data.speeds={normalSpeed=normalSGV(),carrySpeed=carrySGV(),jumpPower=jumpSGV(),stealRadius=stealRadGV(),stealInterval=stealSpdGV()}
@@ -1203,6 +1210,7 @@ buttons["autoleft"].MouseButton1Click:Connect(function()
             waitingForCountdownLeft=true
             buttons["autoleft"]:FindFirstChild("Label").Text="Waiting..."
             buttons["autoleft"]:FindFirstChild("StatusDot").BackgroundColor3=Color3.fromRGB(200,160,0)
+print("[SPADE] reached line 1200")
         else startMovement("left",buttons["autoleft"]) end
     end
 end)
@@ -1303,13 +1311,10 @@ task.defer(function()
         local hum = char:WaitForChild("Humanoid", 5)
         if hum then
             task.wait(0.1)   -- tiny wait for character to settle
+print("[SPADE] reached line 1300")
             if not carrySpeedToggleActive then
                 hum.WalkSpeed = NORMAL_SPEED
             end
         end
     end)
 end)
-end)
-if not ok then
-    print("[SPADE HUB ERROR]: " .. tostring(err))
-end
