@@ -1026,7 +1026,7 @@ if true then -- mobile buttons (always enabled)
     mobileGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
     local BTN_W = 110  -- wide rectangle
-    local BTN_H = 70   -- short rectangle
+    local BTN_H = 54   -- short rectangle
     local GAP = 8
     local buttonsLocked = false
 
