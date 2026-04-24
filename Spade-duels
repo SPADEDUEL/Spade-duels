@@ -2926,7 +2926,3 @@ LocalPlayer.CharacterAdded:Connect(setupChar)
 if LocalPlayer.Character then setupChar(LocalPlayer.Character) end
 
 print("SPADE-HUB - Loaded!")
-print("â€œ Mobile: 2 horizontal rows of rectangle buttons + LOCK button")
-print("â€œ Inf jump fixed for mobile (re-jumps on land)")
-print("â€œ A.LEFT/A.RIGHT auto-reset button when movement completes")
-print("â€œ Drag uses btn.InputChanged - joystick no longer moves buttons")
