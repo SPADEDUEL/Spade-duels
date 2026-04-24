@@ -338,8 +338,8 @@ local function startAntiRagdoll()
                     if pm then require(pm:FindFirstChild("ControlModule")):Enable() end
                 end)
                 if root then
-                    root.Velocity = Vector3.new(0, 0, 0)
-                    root.RotVelocity = Vector3.new(0, 0, 0)
+                    root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
                 end
             end
         end
@@ -384,8 +384,8 @@ RunService.Heartbeat:Connect(function()
     local c = LocalPlayer.Character
     if not c then return end
     local rp = c:FindFirstChild("HumanoidRootPart")
-    if rp and rp.Velocity.Y < -INF_CLAMP_FALL then
-        rp.Velocity = Vector3.new(rp.Velocity.X, -INF_CLAMP_FALL, rp.Velocity.Z)
+    if rp and rp.AssemblyLinearVelocity.Y < -INF_CLAMP_FALL then
+        rp.AssemblyLinearVelocity = Vector3.new(rp.AssemblyLinearVelocity.X, -INF_CLAMP_FALL, rp.AssemblyLinearVelocity.Z)
     end
 end)
 
@@ -395,7 +395,7 @@ UserInputService.JumpRequest:Connect(function()
     if not c then return end
     local rp = c:FindFirstChild("HumanoidRootPart")
     if rp then
-        rp.Velocity = Vector3.new(rp.Velocity.X, INF_JUMP_FORCE, rp.Velocity.Z)
+        rp.AssemblyLinearVelocity = Vector3.new(rp.AssemblyLinearVelocity.X, INF_JUMP_FORCE, rp.AssemblyLinearVelocity.Z)
     end
 end)
 
@@ -1183,7 +1183,7 @@ if true then -- mobile buttons (always enabled)
     end)
 
     print("MOBILE BUTTONS: 2 columns, uniform size, all buttons consistent")
-
+end -- close mobile buttons block
 
 -- Rest of GUI continues...
 main = Instance.new("Frame")
